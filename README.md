@@ -36,7 +36,13 @@ Unit tests for GameBoard class are included in this project.
 
 Run ./test/GameTest.java to start the game. The command line will prompt users for the row and column of moves to be made, and then print out current board state. The command prompt will continue asking for moves until the entire board is filled or a player reaches win condition. 
 
-**4. Future ideas:**
+**4. Current limitations**
+
+* Game board size cannot be larger than 99 by 99. 
+* Players need to input in the cooridnate of moves to make, which can be a hassle.
+
+
+**5. Future ideas:**
 
 * Create an AI to play the game using mini-max algorithms or reinforcement learning.
 * Implement game variant in which a 5-in-a-row which is blocked on both side does not win the game.
