@@ -12,6 +12,7 @@ public class Game {
   private final int boardHeight;
 
   public static int MINDIM = 5;
+  public static int MAXDIM = 99;
   public static int WIN_CONDITION = 5;
   public static char X = 'X';
   public static char O = 'O';
@@ -27,6 +28,11 @@ public class Game {
     if ((width < this.MINDIM) || (height < this.MINDIM)) {
       throw new IllegalArgumentException("Dimension input is below minimum");
     }
+
+    if ((width > this.MAXDIM) || (height > this.MAXDIM)) {
+      throw new IllegalArgumentException("Dimension input exceeds maximum");
+    }
+
     this.boardWidth = width;
     this.boardHeight = height;
   }
@@ -79,13 +85,16 @@ public class Game {
       }
 
       System.out.println(board);
-      // check for win condition
+      // check for win condition, if found, break out of loop
       if (this.board.checkWin(currMove)) {
         System.out.println("Player " + currentPlayer.getSymbol() + " wins!");
         break;
       }
       this.switchPlayer();
     }
+
+    // if board has no more valid move but no win condition is met, declare draw
+    System.out.println("Congrats! You BOTH win!");
   }
 }
 

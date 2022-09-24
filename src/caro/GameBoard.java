@@ -9,6 +9,7 @@ public class GameBoard {
   private final int width; //number of columns
   private final int height; //number of rows
   private char[][] board;
+  private int searchSize = Game.WIN_CONDITION * 2 - 1;
 
   /**
    * Constructor for GameBoard class.
@@ -19,6 +20,10 @@ public class GameBoard {
   public GameBoard(int width, int height) throws IllegalArgumentException{
     if ((width < Game.MINDIM) || (height < Game.MINDIM)) {
       throw new IllegalArgumentException("Dimension input is below minimum");
+    }
+
+    if ((width > Game.MAXDIM) || (height > Game.MAXDIM)) {
+      throw new IllegalArgumentException("Dimension input exceeds maximum");
     }
 
     this.width = width;
@@ -63,7 +68,9 @@ public class GameBoard {
     int r = move[0];
     int c = move[1];
 
+    // check that move is within board's dimension
     if ((r < this.height) && (c < this.width) && (r >= 0) && (c >=0)
+      // check that position is not already taken
       && (this.returnPosition(move) == Game.EMPTY)) {
         return true;
       }
@@ -79,6 +86,7 @@ public class GameBoard {
    * @return  true if added successfully (legal move), false if not
    */
   public boolean addMove(int[] move, char symbol) {
+    // if move is legal, add symbol to board
     if (this.isLegalMove(move)) {
       this.board[move[0]][move[1]] = symbol;
       return true;
@@ -119,13 +127,18 @@ public class GameBoard {
   /**
    * Given a move, define the search range around the move in which the program
    * can check for a win condition.
+   *
+   * The program only needs to check WIN_CONDITION - 1 spaces around the last-made move in the
+   * horizontal, vertical, and diagonal dimension; therefore, a search range is calculated to
+   * make the win condition checking process more efficient.
+   *
    * @param lastMove  move just made
    * @return  search range to check for win condition
    */
   public SearchRange calculateSearchRange(int[] lastMove) {
     int topRow, botRow, leftCol, rightCol;
 
-    // use min and max to make sure search range is not out of bound
+    // use min and max to make sure search range is not out of the dimension of the board
     topRow = Math.max(0, lastMove[0] - (Game.WIN_CONDITION-1));
     leftCol = Math.max(0, lastMove[1] - (Game.WIN_CONDITION-1));
     botRow = Math.min(this.height - 1, lastMove[0] + (Game.WIN_CONDITION-1));
@@ -141,17 +154,19 @@ public class GameBoard {
    * @return max number of time the symbol appears consecutively
    */
   public int countConsecutive(char[] array, char symbol) {
+    // initialize count and streak tracker
     int consecutiveCount = 0, maxCount = 0;
     boolean inStreak = false;
 
+    // loop through elements of array and compare with symbol
     for (char c: array) {
       if (c == symbol) {
-        // if symbol found, start count and start streak
+        // if symbol found, start count and turn streak tracker to true
         consecutiveCount++;
         inStreak = true;
       }
       else {
-        // once streak is broken, compare count with previous count to find the max, then reset
+        // once streak is broken, compare count with previous max count to find the max, then reset
         if (inStreak) {
           inStreak = false;
           maxCount = Math.max(consecutiveCount, maxCount);
@@ -159,12 +174,15 @@ public class GameBoard {
         }
       }
     }
+    /* in the case the last element of the array contains the symbol and streak was not terminated,
+    * compare current streak with max count one last time */
     maxCount = Math.max(consecutiveCount, maxCount);
     return maxCount;
   }
 
   /**
-   * On the row the move was made, count the maximum number of times the symbol was repeated consecutively.
+   * On the row of the move, within search range, count the maximum number of times the symbol was
+   * repeated consecutively.
    * @param move    move made
    * @param search  search range around the move
    * @return  length of maximum consecutive streak of the symbol in row
@@ -172,89 +190,86 @@ public class GameBoard {
   public int checkConsecutiveHorizontal(int[] move, SearchRange search) {
     char[] array;
 
-    // get array subset containing the search range on the row move is made
+    // get array subset containing the search range (inclusive) on the row of the move
     array = Arrays.copyOfRange(this.board[move[0]], search.leftCol, search.rightCol+1);
     return countConsecutive(array, this.returnPosition(move));
   }
 
   /**
-   * On the column the move was made, count the maximum number of times the symbol was repeated consecutively.
+   * On the column of the move, within the search range, count the maximum number of times the
+   * symbol was repeated consecutively.
    * @param move    move made
    * @param search  search range around the move
-   * @return  length of maximum consecutive streak of the symbol in column
+   * @return  length of maximum consecutive streak of the symbol
    */
   public int checkConsecutiveVertical(int [] move, SearchRange search) {
-   char[] array = new char[Game.WIN_CONDITION*2 -1];
-   int i = 0;
+    // initialize the array, representing the symbols on the column of the move, within search range
+   char[] array = new char[this.searchSize];
 
    int[] position = new int[2];
    position[1] = move[1];
 
-   // get array subset on the column the row was made
-    for (int row = search.topRow; row <= search.botRow; row++) {
+   // get array subset on the column of the move, based on search range
+    for (int row = search.topRow, i = 0; row <= search.botRow; row++, i++) {
       position[0] = row;
       array[i] = this.returnPosition(position);
-      i++;
     }
     return countConsecutive(array, this.returnPosition(move));
   }
 
   /**
-   * On the 2 diagonals the move was made, count the maximum number of times the symbol was repeated consecutively.
+   * On the 2 diagonals the move was made, within search range, count the maximum number of times
+   * the symbol was repeated consecutively.
    * @param move    move made
    * @param search  search range around the move
    * @return  length of maximum consecutive streak of the symbol in diagonals
    */
   public int checkConsecutiveDiag(int [] move, SearchRange search) {
     int[] position = new int[2];
-    // check northeast
-    char[] arrayNE = new char[Game.WIN_CONDITION];
-    // construct diagonal array northeast by traversing from move to top left, inclusive
-    for (int i = 0, row = move[0], col = move[1];
-         (row >= search.topRow) && (col >= search.leftCol);
-         row--, col--, i++) {
+
+    // array represents the northeast-southwest diagonal around the move
+    char[] array = new char[this.searchSize];
+    // construct diagonal array northeast by traversing from move to top left, inclusive of move
+    for (int i = Game.WIN_CONDITION - 1, row = move[0], col = move[1];
+         (row >= search.topRow) && (col >= search.leftCol) && (i >= 0);
+         row--, col--, i--) {
       position[0] = row;
       position[1] = col;
-      arrayNE[i] = this.returnPosition(position);
+      array[i] = this.returnPosition(position);
     }
 
-    // check southwest
-    char[] arraySW = new char[Game.WIN_CONDITION-1];
     // construct diagonal array southwest by traversing from move (exclusive) to bottom right
-    for (int i = 0, row = move[0] + 1, col = move[1] + 1;
-         (row <= search.botRow) && (col <= search.rightCol);
+    for (int i = Game.WIN_CONDITION, row = move[0] + 1, col = move[1] + 1;
+         (row <= search.botRow) && (col <= search.rightCol) && (i < this.searchSize);
          row++, col++, i++) {
       position[0] = row;
       position[1] = col;
-      arraySW[i] = this.returnPosition(position);
+      array[i] = this.returnPosition(position);
     }
 
-    // check northwest
-    char[] arrayNW = new char[Game.WIN_CONDITION];
+    // array2 represents the northwest-southeast diagonal
+    char[] array2 = new char[this.searchSize];
     // construct diagonal array northwest by traversing from move (inclusive) to top right
-    for (int i = 0, row = move[0], col = move[1];
-         (row >= search.topRow) && (col <= search.rightCol);
-         row--, col++, i++) {
+    for (int i = Game.WIN_CONDITION - 1, row = move[0], col = move[1];
+         (row >= search.topRow) && (col <= search.rightCol) && (i >= 0);
+         row--, col++, i--) {
       position[0] = row;
       position[1] = col;
-      arrayNW[i] = this.returnPosition(position);
+      array2[i] = this.returnPosition(position);
     }
 
-    // check northwest
-    char[] arraySE = new char[Game.WIN_CONDITION-1];
     // construct diagonal array southeast by traversing from move (exclusive) to bottom left
-    for (int i = 0, row = move[0] + 1, col = move[1] - 1;
-         (row <= search.botRow) && (col >= search.leftCol);
+    for (int i = Game.WIN_CONDITION, row = move[0] + 1, col = move[1] - 1;
+         (row <= search.botRow) && (col >= search.leftCol) && ( i < this.searchSize);
          row++, col--, i++) {
       position[0] = row;
       position[1] = col;
-      arraySE[i] = this.returnPosition(position);
+      array2[i] = this.returnPosition(position);
     }
 
     char symbol = this.returnPosition(move);
-    // adding northeast and southwest diagonals, and compare it with northwest and southeast
-    return Math.max(countConsecutive(arrayNE, symbol) + countConsecutive(arraySW, symbol),
-            countConsecutive(arraySE, symbol)+countConsecutive(arrayNW, symbol));
+    // compare the maximum consecutive streak between the 2 diagonals, and return the larger count
+    return Math.max(countConsecutive(array, symbol), countConsecutive(array2, symbol));
   }
 
   /**
