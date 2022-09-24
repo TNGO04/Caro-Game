@@ -28,6 +28,7 @@ Main classes:
 * Game: implement the game play for Caro.
 * GameBoard: represent the game board (inluding moves made) and have methods to extract certain information from current board state.
 * Player: represent a player in the game.
+* SearchRange: when attempting to confirm if the win condition is met after a certain move was made, it is useful to only consider spaces that are (WIN_CONDITION - 1) spaces away from the last move to make the process more efficient. SearchRange is a struct (represented as a class) that stores this range. 
 
 Unit tests for GameBoard class are included in this project. 
 
