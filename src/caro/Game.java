@@ -88,7 +88,7 @@ public class Game {
       // check for win condition, if found, break out of loop
       if (this.board.checkWin(currMove)) {
         System.out.println("Player " + currentPlayer.getSymbol() + " wins!");
-        break;
+        return;
       }
       this.switchPlayer();
     }

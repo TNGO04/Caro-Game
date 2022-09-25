@@ -169,8 +169,6 @@ public class GameBoardTest {
     board.addMove(move, Game.X);
 
     assertEquals(5, board.checkConsecutiveVertical(move, board.calculateSearchRange(move)));
-    //board.addMove(new int[]{5, 0}, Game.O);
-    //assertEquals(0, board.checkConsecutiveVertical(move, board.calculateSearchRange(move)));
   }
 
   /**
@@ -194,10 +192,6 @@ public class GameBoardTest {
     board.addMove(new int[]{3, 2}, Game.X);
     move = new int[]{3, 2};
     assertEquals(4, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
-
-    board.addMove(new int[]{0, 5}, Game.O);
-    board.addMove(new int[]{5, 0}, Game.O);
-    assertEquals(2, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
   }
 
   /**

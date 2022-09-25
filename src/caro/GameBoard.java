@@ -193,18 +193,12 @@ public class GameBoard {
    */
   public int checkConsecutiveHorizontal(int[] move, SearchRange search) {
     char symbol = this.returnPosition(move);
-    /* blockCount keeps track of if the consecutive streak is blocked by the board's edge or opponent
-        on no, one, or both sides */
-    int count = 1, blockCount = 0;
-
+    int count = 1;
     // traverse from move to horizontal right
     for (int col = move[1] + 1; col <= search.rightCol; col++) {
       if (this.board[move[0]][col] == symbol) {
         count++;
       } else {
-        if (this.board[move[0]][col] != ' ') {
-          blockCount++;
-        }
         break;
       }
     }
@@ -213,16 +207,8 @@ public class GameBoard {
       if (this.board[move[0]][col] == symbol) {
         count++;
       } else {
-        if (this.board[move[0]][col] != ' ') {
-          blockCount++;
-        }
         break;
       }
-    }
-
-    // if move is blocked on both sides, consecutive streak is 0
-    if (blockCount == 2) {
-      count = 0;
     }
     return count;
   }
@@ -237,18 +223,12 @@ public class GameBoard {
    */
   public int checkConsecutiveVertical(int[] move, SearchRange search) {
     char symbol = this.returnPosition(move);
-    /* blockCount keeps track of if the consecutive streak is blocked by the board's edge or opponent
-      on no, one, or both sides */
-    int count = 1, blockCount = 0;
-
+    int count = 1;
     // traverse from move to bottom row
     for (int row = move[0] + 1; row <= search.botRow; row++) {
       if (this.board[row][move[1]] == symbol) {
         count++;
       } else {
-        if (this.board[row][move[1]] != ' ') {
-          blockCount++;
-        }
         break;
       }
     }
@@ -257,16 +237,8 @@ public class GameBoard {
       if (this.board[row][move[1]] == symbol) {
         count++;
       } else {
-        if (this.board[row][move[1]] != ' ') {
-          blockCount++;
-        }
         break;
       }
-    }
-
-    // if streak is blocked on both sides, reset count to 0
-    if (blockCount == 2) {
-      count = 0;
     }
     return count;
   }
@@ -281,9 +253,7 @@ public class GameBoard {
    */
   public int checkConsecutiveDiag(int[] move, SearchRange search) {
     char symbol = this.returnPosition(move);
-    /* blockCount keeps track of if the consecutive streak is blocked by the board's edge or opponent
-      on no, one, or both sides */
-    int count1 = 1, blockCount1 = 0;
+    int count1 = 1;
     // traverse diagonally from move to top left
     for (int row = move[0] - 1, col = move[1] - 1;
          (row >= search.topRow) && (col >= search.leftCol);
@@ -291,9 +261,6 @@ public class GameBoard {
       if (this.board[row][col] == symbol) {
         count1++;
       } else {
-        if (this.board[row][col] != ' ') {
-          blockCount1++;
-        }
         break;
       }
     }
@@ -304,14 +271,11 @@ public class GameBoard {
       if (this.board[row][col] == symbol) {
         count1++;
       } else {
-        if (this.board[row][col] != ' ') {
-          blockCount1++;
-        }
         break;
       }
     }
     // traverse diagonally from move to top right
-    int count2 = 1, blockCount2 = 0;
+    int count2 = 1;
     // construct diagonal array northwest by traversing from move (inclusive) to top right
     for (int row = move[0] - 1, col = move[1] + 1;
          (row >= search.topRow) && (col <= search.rightCol);
@@ -319,9 +283,6 @@ public class GameBoard {
       if (this.board[row][col] == symbol) {
         count2++;
       } else {
-        if (this.board[row][col] != ' ') {
-          blockCount2++;
-        }
         break;
       }
     }
@@ -332,19 +293,8 @@ public class GameBoard {
       if (this.board[row][col] == symbol) {
         count2++;
       } else {
-        if (this.board[row][col] != ' ') {
-          blockCount2++;
-        }
         break;
       }
-    }
-
-    // if streak is blocked on both sides, reset count to 0
-    if (blockCount1 == 2) {
-      count1 = 0;
-    }
-    if (blockCount2 == 2) {
-      count2 = 0;
     }
     //return max count of the two diagonals
     return Math.max(count1, count2);
