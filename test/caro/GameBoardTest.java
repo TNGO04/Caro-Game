@@ -1,6 +1,7 @@
 package caro;
 
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +34,7 @@ public class GameBoardTest {
    */
   @Test(expected = IllegalArgumentException.class)
   public void testBadArgument() {
-    board.returnPosition(new int[]{20,18});
+    board.returnPosition(new int[]{20, 18});
   }
 
   /**
@@ -44,7 +45,7 @@ public class GameBoardTest {
     this.board.initializeBoard();
 
     for (int row = 0; row < this.HEIGHT; row++) {
-      for (int col =0; col < this.WIDTH; col++) {
+      for (int col = 0; col < this.WIDTH; col++) {
         assertEquals(Game.EMPTY, this.board.returnPosition(new int[]{row, col}));
       }
     }
@@ -56,7 +57,7 @@ public class GameBoardTest {
   @Test
   public void testReturnPosition() {
     this.board.initializeBoard();
-    assertEquals(Game.EMPTY, this.board.returnPosition(new int[] {0,0}));
+    assertEquals(Game.EMPTY, this.board.returnPosition(new int[]{0, 0}));
   }
 
   /**
@@ -66,12 +67,12 @@ public class GameBoardTest {
   public void isLegalMove() {
     this.board.initializeBoard();
 
-    int[] move = new int[]{1,4};
+    int[] move = new int[]{1, 4};
     assertTrue(board.isLegalMove(move));
     board.addMove(move, Game.X);
     assertFalse(board.isLegalMove(move));
 
-    assertFalse(board.isLegalMove(new int[]{20,10}));
+    assertFalse(board.isLegalMove(new int[]{20, 10}));
   }
 
   /**
@@ -80,7 +81,7 @@ public class GameBoardTest {
   @Test
   public void addMove() {
     board.initializeBoard();
-    int[] move = new int[]{1,1};
+    int[] move = new int[]{1, 1};
     assertTrue(board.addMove(move, Game.X));
     assertEquals(Game.X, board.returnPosition(move));
 
@@ -94,21 +95,21 @@ public class GameBoardTest {
   public void testCalculateSearchRange() {
 
     //test case: close to top left
-    SearchRange range1 = board.calculateSearchRange(new int[]{0,0});
+    SearchRange range1 = board.calculateSearchRange(new int[]{0, 0});
     assertEquals(range1.botRow, 4);
     assertEquals(range1.rightCol, 4);
     assertEquals(range1.topRow, 0);
     assertEquals(range1.leftCol, 0);
 
     //test case: close to bottom right
-    SearchRange range2 = board.calculateSearchRange(new int[]{8,8});
+    SearchRange range2 = board.calculateSearchRange(new int[]{8, 8});
     assertEquals(range2.botRow, 9);
     assertEquals(range2.rightCol, 9);
     assertEquals(range2.topRow, 4);
     assertEquals(range2.leftCol, 4);
 
     // test case: middle of board
-    SearchRange range3 = board.calculateSearchRange(new int[]{4,4});
+    SearchRange range3 = board.calculateSearchRange(new int[]{4, 4});
     assertEquals(range3.botRow, 8);
     assertEquals(range3.rightCol, 8);
     assertEquals(range3.topRow, 0);
@@ -120,7 +121,7 @@ public class GameBoardTest {
    */
   @Test
   public void testCountConsecutive() {
-    char[] array1 = new char[]{' ','X', 'X', ' ', ' ', 'X', 'X', 'X', 'X'};
+    char[] array1 = new char[]{' ', 'X', 'X', ' ', ' ', 'X', 'X', 'X', 'X'};
     assertEquals(board.countConsecutive(array1, 'X'), 4);
 
     char[] array2 = new char[12];
@@ -138,7 +139,7 @@ public class GameBoardTest {
   @Test
   public void testCheckConsecutiveHorizontal() {
     board.initializeBoard();
-    int[] move = new int[] {0,0};
+    int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
     assertEquals(1, board.checkConsecutiveHorizontal(move, board.calculateSearchRange(move)));
 
@@ -157,7 +158,7 @@ public class GameBoardTest {
   @Test
   public void testCheckConsecutiveVertical() {
     board.initializeBoard();
-    int[] move = new int[] {0,0};
+    int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
     assertEquals(1, board.checkConsecutiveVertical(move, board.calculateSearchRange(move)));
 
@@ -168,6 +169,8 @@ public class GameBoardTest {
     board.addMove(move, Game.X);
 
     assertEquals(5, board.checkConsecutiveVertical(move, board.calculateSearchRange(move)));
+    //board.addMove(new int[]{5, 0}, Game.O);
+    //assertEquals(0, board.checkConsecutiveVertical(move, board.calculateSearchRange(move)));
   }
 
   /**
@@ -176,11 +179,11 @@ public class GameBoardTest {
   @Test
   public void testCheckConsecutiveDiag() {
     board.initializeBoard();
-    int[] move = new int[] {0,0};
+    int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
     assertEquals(1, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
 
-    move = new int[] {1,1};
+    move = new int[]{1, 1};
     board.addMove(move, Game.X);
     assertEquals(2, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
 
@@ -189,8 +192,12 @@ public class GameBoardTest {
     board.addMove(new int[]{4, 1}, Game.X);
     board.addMove(new int[]{4, 3}, Game.X);
     board.addMove(new int[]{3, 2}, Game.X);
-    move = new int[] {3,2};
+    move = new int[]{3, 2};
     assertEquals(4, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
+
+    board.addMove(new int[]{0, 5}, Game.O);
+    board.addMove(new int[]{5, 0}, Game.O);
+    assertEquals(2, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
   }
 
   /**
@@ -204,12 +211,12 @@ public class GameBoardTest {
     assertTrue(board.checkWin(lastMove));
   }
 
-  public static void main(String [] args) {
+  public static void main(String[] args) {
     GameBoard board = new GameBoard(10, 10);
     board.initializeBoard();
-    board.addMove(new int[]{1, 1},Game.X);
-    board.addMove(new int[]{2, 2},Game.X);
-    board.addMove(new int[]{3, 3},Game.X);
+    board.addMove(new int[]{1, 1}, Game.X);
+    board.addMove(new int[]{2, 2}, Game.X);
+    board.addMove(new int[]{3, 3}, Game.X);
 
     System.out.println(board.toString());
   }

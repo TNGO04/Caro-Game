@@ -10,7 +10,8 @@ public class Player {
 
   /**
    * Constructor.
-   * @param symbol  player symbol
+   *
+   * @param symbol player symbol
    */
   public Player(char symbol) {
     this.symbol = symbol;
@@ -18,6 +19,7 @@ public class Player {
 
   /**
    * Obtain move from player.
+   *
    * @return move as an array
    */
   public int[] obtainMove() {
@@ -35,6 +37,7 @@ public class Player {
 
   /**
    * Return player symbol.
+   *
    * @return
    */
   public char getSymbol() {

@@ -20,11 +20,12 @@ public class Game {
 
   /**
    * Constructor for Game object.
-   * @param width   width of game board
-   * @param height  height of game board
+   *
+   * @param width  width of game board
+   * @param height height of game board
    * @throws IllegalArgumentException if dimension is less than minimum
    */
-  public Game(int width, int height) throws IllegalArgumentException{
+  public Game(int width, int height) throws IllegalArgumentException {
     if ((width < this.MINDIM) || (height < this.MINDIM)) {
       throw new IllegalArgumentException("Dimension input is below minimum");
     }
@@ -78,8 +79,7 @@ public class Game {
         currMove = this.currentPlayer.obtainMove();
         if (this.board.addMove(currMove, this.currentPlayer.getSymbol())) {
           break;
-        }
-        else {
+        } else {
           System.out.println("Move is illegal! Please input another move!");
         }
       }
