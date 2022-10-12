@@ -5,12 +5,13 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 /**
  * JUnit test class for GameBoard.
  */
 public class GameBoardTest {
-  private final int WIDTH = 10;
-  private final int HEIGHT = 10;
+  private final int DIMENSION = 10;
   private GameBoard board;
 
   /**
@@ -18,7 +19,7 @@ public class GameBoardTest {
    */
   @Before
   public void setUp() {
-    board = new GameBoard(WIDTH, HEIGHT);
+    board = new GameBoard(DIMENSION);
   }
 
   /**
@@ -26,7 +27,28 @@ public class GameBoardTest {
    */
   @Test(expected = IllegalArgumentException.class)
   public void testBadConstruction() {
-    new GameBoard(2, 2);
+    new GameBoard(2);
+  }
+
+  /**
+   * Test for GameBoard copy constructor.
+   */
+  @Test
+  public void testCopyConstructor() {
+    GameBoard boardCopy = new GameBoard(board);
+    assertNotSame(board, boardCopy);
+
+    boardCopy.initializeBoard();
+    assertEquals(boardCopy.returnPosition(1,1), Game.EMPTY);
+    assertFalse(board.returnPosition(1,1) == Game.EMPTY);
+  }
+
+  /**
+   * Test getBoardDimension().
+   */
+  @Test
+  public void testGetBoardDimension() {
+    assertEquals(DIMENSION, board.getBoardDimension());
   }
 
   /**
@@ -34,8 +56,9 @@ public class GameBoardTest {
    */
   @Test(expected = IllegalArgumentException.class)
   public void testBadArgument() {
-    board.returnPosition(new int[]{20, 18});
+    board.returnPosition(20,18);
   }
+
 
   /**
    * Test initializeBoard() method.
@@ -44,11 +67,20 @@ public class GameBoardTest {
   public void testInitializeBoard() {
     this.board.initializeBoard();
 
-    for (int row = 0; row < this.HEIGHT; row++) {
-      for (int col = 0; col < this.WIDTH; col++) {
-        assertEquals(Game.EMPTY, this.board.returnPosition(new int[]{row, col}));
+    for (int row = 0; row < this.DIMENSION; row++) {
+      for (int col = 0; col < this.DIMENSION; col++) {
+        assertEquals(Game.EMPTY, board.returnPosition(row, col));
       }
     }
+  }
+
+  /**
+   * Test isOnBoard().
+   */
+  @Test
+  public void testIsOnBoard() {
+    assertFalse(board.isOnBoard(20,20));
+    assertTrue(board.isOnBoard(new int[] {6,8}));
   }
 
   /**
@@ -57,7 +89,7 @@ public class GameBoardTest {
   @Test
   public void testReturnPosition() {
     this.board.initializeBoard();
-    assertEquals(Game.EMPTY, this.board.returnPosition(new int[]{0, 0}));
+    assertEquals(Game.EMPTY, this.board.returnPosition(0, 0));
   }
 
   /**
@@ -72,7 +104,7 @@ public class GameBoardTest {
     board.addMove(move, Game.X);
     assertFalse(board.isLegalMove(move));
 
-    assertFalse(board.isLegalMove(new int[]{20, 10}));
+    assertFalse(board.isLegalMove(20, 10));
   }
 
   /**
@@ -86,6 +118,27 @@ public class GameBoardTest {
     assertEquals(Game.X, board.returnPosition(move));
 
     assertFalse(board.addMove(move, Game.X));
+    assertFalse(board.addMove(20,20, Game.X));
+  }
+
+  /**
+   * Test toString().
+   */
+  @Test
+  public void testToString() {
+    GameBoard smallBoard = new GameBoard(5);
+    smallBoard.initializeBoard();
+    smallBoard.addMove(1,1, Game.X);
+
+    assertEquals(smallBoard.toString(),
+                "___________________\n" +
+                      "|  |00|01|02|03|04|\n" +
+                      "|00|  |  |  |  |  |\n" +
+                      "|01|  |X |  |  |  |\n" +
+                      "|02|  |  |  |  |  |\n" +
+                      "|03|  |  |  |  |  |\n" +
+                      "|04|  |  |  |  |  |\n" +
+                      "-------------------\n");
   }
 
   /**
@@ -93,45 +146,28 @@ public class GameBoardTest {
    */
   @Test
   public void testCalculateSearchRange() {
-
     //test case: close to top left
-    SearchRange range1 = board.calculateSearchRange(new int[]{0, 0});
-    assertEquals(range1.botRow, 4);
-    assertEquals(range1.rightCol, 4);
-    assertEquals(range1.topRow, 0);
-    assertEquals(range1.leftCol, 0);
+    SearchRange range1 = board.calculateSearchRange(new int[]{0, 0}, Game.WIN_CONDITION);
+    assertEquals(range1.getBotRow(), 4);
+    assertEquals(range1.getRightCol(), 4);
+    assertEquals(range1.getTopRow(), 0);
+    assertEquals(range1.getLeftCol(), 0);
 
     //test case: close to bottom right
-    SearchRange range2 = board.calculateSearchRange(new int[]{8, 8});
-    assertEquals(range2.botRow, 9);
-    assertEquals(range2.rightCol, 9);
-    assertEquals(range2.topRow, 4);
-    assertEquals(range2.leftCol, 4);
+    SearchRange range2 = board.calculateSearchRange(new int[]{8, 8}, Game.WIN_CONDITION);
+    assertEquals(range2.getBotRow(), 9);
+    assertEquals(range2.getRightCol(), 9);
+    assertEquals(range2.getTopRow(), 4);
+    assertEquals(range2.getLeftCol(), 4);
 
     // test case: middle of board
-    SearchRange range3 = board.calculateSearchRange(new int[]{4, 4});
-    assertEquals(range3.botRow, 8);
-    assertEquals(range3.rightCol, 8);
-    assertEquals(range3.topRow, 0);
-    assertEquals(range3.leftCol, 0);
+    SearchRange range3 = board.calculateSearchRange(new int[]{4, 4}, Game.WIN_CONDITION);
+    assertEquals(range3.getBotRow(), 8);
+    assertEquals(range3.getRightCol(), 8);
+    assertEquals(range3.getTopRow(), 0);
+    assertEquals(range3.getLeftCol(), 0);
   }
 
-  /**
-   *
-   */
-  @Test
-  public void testCountConsecutive() {
-    char[] array1 = new char[]{' ', 'X', 'X', ' ', ' ', 'X', 'X', 'X', 'X'};
-    assertEquals(board.countConsecutive(array1, 'X'), 4);
-
-    char[] array2 = new char[12];
-    array2[0] = ' ';
-    array2[1] = 'X';
-    array2[4] = 'X';
-    array2[5] = 'X';
-
-    assertEquals(board.countConsecutive(array2, 'X'), 2);
-  }
 
   /**
    * Test checkConsecutiveHorizontal().
@@ -141,7 +177,8 @@ public class GameBoardTest {
     board.initializeBoard();
     int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
-    assertEquals(1, board.checkConsecutiveHorizontal(move, board.calculateSearchRange(move)));
+    assertEquals(1,
+            board.checkConsecutiveHorizontal(move, board.calculateSearchRange(move,Game.WIN_CONDITION)));
 
     board.addMove(new int[]{0, 1}, Game.X);
     board.addMove(new int[]{0, 2}, Game.X);
@@ -149,7 +186,8 @@ public class GameBoardTest {
     move[1] = 4;
     board.addMove(move, Game.X);
 
-    assertEquals(5, board.checkConsecutiveHorizontal(move, board.calculateSearchRange(move)));
+    assertEquals(5,
+            board.checkConsecutiveHorizontal(move, board.calculateSearchRange(move,Game.WIN_CONDITION)));
   }
 
   /**
@@ -160,7 +198,8 @@ public class GameBoardTest {
     board.initializeBoard();
     int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
-    assertEquals(1, board.checkConsecutiveVertical(move, board.calculateSearchRange(move)));
+    assertEquals(1,
+            board.checkConsecutiveVertical(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
 
     board.addMove(new int[]{1, 0}, Game.X);
     board.addMove(new int[]{2, 0}, Game.X);
@@ -168,7 +207,8 @@ public class GameBoardTest {
     move[0] = 4;
     board.addMove(move, Game.X);
 
-    assertEquals(5, board.checkConsecutiveVertical(move, board.calculateSearchRange(move)));
+    assertEquals(5,
+            board.checkConsecutiveVertical(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
   }
 
   /**
@@ -179,11 +219,13 @@ public class GameBoardTest {
     board.initializeBoard();
     int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
-    assertEquals(1, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
+    assertEquals(1,
+            board.checkConsecutiveDiag(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
 
     move = new int[]{1, 1};
     board.addMove(move, Game.X);
-    assertEquals(2, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
+    assertEquals(2,
+            board.checkConsecutiveDiag(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
 
     board.addMove(new int[]{2, 3}, Game.X);
     board.addMove(new int[]{1, 4}, Game.X);
@@ -191,22 +233,62 @@ public class GameBoardTest {
     board.addMove(new int[]{4, 3}, Game.X);
     board.addMove(new int[]{3, 2}, Game.X);
     move = new int[]{3, 2};
-    assertEquals(4, board.checkConsecutiveDiag(move, board.calculateSearchRange(move)));
+    assertEquals(4,
+            board.checkConsecutiveDiag(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
   }
 
   /**
-   * Test checkWin().
+   * Test checkWinningMove().
    */
   @Test
-  public void testCheckWin() {
-    testCheckConsecutiveHorizontal();
+  public void testCheckWinningMove() {
+    int[] lastMove = new int[]{3,2};
+    testCheckConsecutiveDiag();
+    assertFalse(board.checkWinningMove(lastMove));
 
-    int[] lastMove = new int[]{0, 4};
-    assertTrue(board.checkWin(lastMove));
+    testCheckConsecutiveHorizontal();
+    lastMove = new int[]{0, 4};
+    assertTrue(board.checkWinningMove(lastMove));
+  }
+
+  /**
+   * Test getRow().
+   */
+  @Test
+  public void testGetRow () {
+    testCheckConsecutiveHorizontal();
+    char [] testArray = new char[]{Game.X, Game.X, Game.X, Game.X, Game.X,
+                                  Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY};
+    assertEquals(Arrays.toString(testArray), Arrays.toString(board.getRow(0)));
+    board.addMove(0,5, Game.X);
+    assertFalse(Arrays.toString(testArray).equals(Arrays.toString(board.getRow(0))));
+  }
+
+  /**
+   * Test getColumn().
+   */
+  @Test
+  public void testGetColumn() {
+    testCheckConsecutiveVertical();
+    char [] testArray = new char[]{Game.X, Game.X, Game.X, Game.X, Game.X,
+            Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY};
+    assertEquals(Arrays.toString(testArray), Arrays.toString(board.getColumn(0)));
+    board.addMove(5,0, Game.X);
+    assertFalse(Arrays.toString(testArray).equals(Arrays.toString(board.getRow(0))));
+  }
+
+  @Test
+  public void testGetDiagonal() {
+    testCheckConsecutiveDiag();
+    assertEquals("[X, X,  ,  ,  ,  ,  ,  ,  ,  ]",
+            Arrays.toString(board.getDiagonal(0,0,9,9)));
+
+    assertEquals("[ , X, X, X, X,  ]",
+            Arrays.toString(board.getDiagonal(0,5,5,0)));
   }
 
   public static void main(String[] args) {
-    GameBoard board = new GameBoard(10, 10);
+    GameBoard board = new GameBoard( 10);
     board.initializeBoard();
     board.addMove(new int[]{1, 1}, Game.X);
     board.addMove(new int[]{2, 2}, Game.X);
