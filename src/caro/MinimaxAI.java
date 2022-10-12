@@ -12,25 +12,24 @@ import java.util.Random;
 public class MinimaxAI {
   GameBoard board;
   Player aiPlayer;
+  Player opponent;
 
-  private final double unblockedFourUtility = 1.0;
-  private final double blockedFourUtility = 0.5;
-  private final double unblockedThreeUtility = 0.5;
-  private final double blockedThreeUtility = 0.2;
-  private final double unblockedTwoUtility = 0.15;
-  private final double blockedTwoUtility = 0.05;
+  private final double unblockedFourUtility = 1.0, blockedFourUtility = 0.5;
+  private final double unblockedThreeUtility = 0.5, blockedThreeUtility = 0.2;
+  private final double unblockedTwoUtility = 0.15, blockedTwoUtility = 0.05;
 
   /**
    * Constructor for MinimaxAI.
    *
    * @param board GameBoard object
    */
-  public MinimaxAI(GameBoard board, Player aiPlayer) throws IllegalArgumentException {
-    if ((board == null) || (aiPlayer == null)) {
+  public MinimaxAI(GameBoard board, Player aiPlayer, Player opponent) throws IllegalArgumentException {
+    if ((board == null) || (aiPlayer == null) || (opponent == null)) {
       throw new IllegalArgumentException("Input object is null.");
     }
     this.board = board;
     this.aiPlayer = aiPlayer;
+    this.opponent = opponent;
   }
 
   /**
@@ -56,19 +55,21 @@ public class MinimaxAI {
   /**
    * Get a set of potential action (move) for MinimaxAI to take.
    * Given the size of the board, it is computationally expensive to list all possible move.
-   * Instead, in this method, we only consider moves within SEARCH_RANGE
-   * of the last move made by player.
+   * Instead, in this method, we only consider moves within a radius of the last move made by
+   * player. In addition, since the objective of a move is either blocking an opponent or expanding
+   * one's streak, we only consider potential moves that are adjacent to another previously-made
+   * moves. Disconnected potential moves are therefore not added to actionSet.
    *
    * @param lastMove :   last move made in the game
    * @return list of possible moves to make
    */
-  public List<int[]> getActionSet(int[] lastMove, int radius) {
-    SearchRange search = this.board.calculateSearchRange(lastMove, radius);
+  public List<int[]> getActionSet(int[] lastMove, GameBoard boardState, int radius) {
+    SearchRange search = boardState.calculateSearchRange(lastMove, radius);
     List<int[]> actionSet = new ArrayList<int[]>();
 
     for (int row = search.getTopRow(); row <= search.getBotRow(); row++) {
       for (int col = search.getLeftCol(); col <= search.getRightCol(); col++) {
-        if (this.board.returnPosition(row, col) == Game.EMPTY) {
+        if (boardState.isEmpty(row, col) && !boardState.isDisconnected(row, col)) {
           actionSet.add(new int[]{row, col});
         }
       }
@@ -95,119 +96,6 @@ public class MinimaxAI {
   }
 
 
-  /**
-   * Given an array and a symbol, count the maximum amount of time the symbol appears consecutively.
-   * This function ignores streaks that are blocked on both sides. A streak is unblocked on one side
-   * if it is preceded or succeeded by an EMPTY symbol.
-   * e.g: XXXO__OXXXO_XXX:
-   * first cluster of XXX: blocked both sides, since not preceded by an EMPTY symbol, and
-   * succeeded by 'O'
-   * second cluster of XXX: blocked both sides, preceded and succeeded by 'O'
-   * third cluster of XXX:  blocked on one side (right-most) since preceded by EMPTY symbol
-   * This function also keeps track of how many times a streak of maximum size appears in the array.
-   * and how many of those streaks are unblocked (meaning the streak is surrounded by EMPTY symbols
-   * on both sides).
-   * e.g.: _XXX_OXXX_OXXX -> maxStreakSize = 3, streakCount = 2, unblockedCount = 1
-   * first cluster: unblocked both sides
-   * second cluster: counted in streakCount because blocked only on one side
-   * third cluster: not counted in streakCount because blocked on both sides
-   *
-   * @param array  array to be searched
-   * @param symbol symbol to be searched
-   * @return max number of time the symbol appears consecutively
-   */
-  public StreakList countConsecutive(char[] array, char symbol) {
-    int arrayLength = array.length;
-    // initialize max streak size, and count of the number of streaks in array that is of that size
-    StreakList list = new StreakList();
-
-    // initialize streak marker, block marker, and streak counter
-    int blockMarker = 0, maxStreak = 0;
-    boolean inStreak = false;
-
-    // loop through elements of array and detect streak
-    for (int i = 0; i < arrayLength; i++) {
-      if (array[i] == symbol) {
-        // if symbol found, start count and turn streak tracker to true
-        maxStreak++;
-        if (!inStreak) {
-          inStreak = true;
-          /* if streak is at the start of the array or preceding character is not EMPTY, set block
-          marker to 1 to note that streak is blocked left-side */
-          if ((i == 0) || (array[i - 1] != Game.EMPTY)) {
-            blockMarker = 1;
-          }
-          // if streak is at the end of the array, increase block marker
-          if (i == (arrayLength - 1)) {
-            blockMarker++;
-          }
-        }
-      } else {
-        if (inStreak) {
-          // if streak ends
-          inStreak = false;
-          // if streaked is terminated not by an EMPTY symbol, increase block marker
-          if (array[i] != Game.EMPTY) {
-            blockMarker++;
-          }
-          list.addStreak(maxStreak, blockMarker);
-          blockMarker = 0;
-          maxStreak = 0;
-        }
-      }
-    }
-    // Since there could be a streak at the end of array, run a check one last time
-    if (inStreak) {
-      blockMarker++;
-      list.addStreak(maxStreak, blockMarker);
-    }
-    return list;
-  }
-
-  /**
-   * Scan the board to check for streaks.
-   *
-   * @return StreakList object representing all valid streaks found on the board
-   */
-  public StreakList checkBoardForStreaks(Player player) {
-    char symbol = player.getSymbol();
-    int dimension = this.board.getBoardDimension();
-    StreakList list = new StreakList();
-
-    // check each row for streak
-    for (int row = 0; row < dimension; row++) {
-      list.addStreakList(this.countConsecutive(this.board.getRow(row), symbol));
-    }
-
-    // check each column for streak
-    for (int col = 0; col < dimension; col++) {
-      list.addStreakList(this.countConsecutive(this.board.getColumn(col), symbol));
-    }
-
-    // check diagonals for streaks
-    for (int row = Game.WIN_CONDITION - 1, col = 0; row < dimension; row++) {
-      list.addStreakList(this.countConsecutive(
-              this.board.getDiagonal(row, col, col, row), symbol));
-    }
-
-    for (int col = 1, row = dimension - 1; col <= (dimension - Game.WIN_CONDITION); col++) {
-      list.addStreakList(this.countConsecutive(
-              this.board.getDiagonal(row, col, col, row), symbol));
-    }
-
-    for (int col = Game.WIN_CONDITION - 1, row = dimension - 1; col < dimension; col++) {
-      list.addStreakList(this.countConsecutive(
-              this.board.getDiagonal(row, col, row - col, 0), symbol));
-    }
-
-    for (int row = dimension - 2, col = board.getBoardDimension() - 1;
-         row >= (Game.WIN_CONDITION - 1); row--) {
-      list.addStreakList(this.countConsecutive(
-              this.board.getDiagonal(row, col, 0, col - row), symbol));
-    }
-
-    return list;
-  }
 
   /**
    * Given a list of streaks, calculate the utility score.
@@ -248,4 +136,21 @@ public class MinimaxAI {
       return utility;
     }
   }
+
+  public double calculateUtilityOfBoardState(GameBoard boardState) {
+    return (this.calculateUtility(boardState.checkBoardForStreaks(aiPlayer))
+            - this.calculateUtility(boardState.checkBoardForStreaks(opponent)));
+  }
+
+  /*
+  public double maximizer(GameBoard boardState, double maxUtility, int[] lastMove) {
+    if (boardState.isOutOfMoves()) {
+      return this.calculateUtilityOfBoardState(boardState);
+    }
+
+    double utility = Double.NEGATIVE_INFINITY;
+
+
+  }
+*/
 }

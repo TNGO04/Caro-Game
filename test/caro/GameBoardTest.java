@@ -92,6 +92,14 @@ public class GameBoardTest {
     assertEquals(Game.EMPTY, this.board.returnPosition(0, 0));
   }
 
+  @Test
+  public void testIsEmpty() {
+    this.board.initializeBoard();
+    assertTrue(board.isEmpty(5,5));
+    board.addMove(5,5, Game.X);
+    assertFalse(board.isEmpty(5,5));
+  }
+
   /**
    * Test isLegalMove() method.
    */
@@ -108,6 +116,22 @@ public class GameBoardTest {
   }
 
   /**
+   * Test for isDisconnected().
+   */
+  @Test
+  public void isDisconnected() {
+    board.initializeBoard();
+    assertTrue(board.isDisconnected(0,0));
+    board.addMove(0,1, Game.X);
+    assertFalse(board.isDisconnected(0,0));
+    assertFalse(board.isDisconnected(1,1));
+    assertTrue(board.isDisconnected(5,5));
+    board.addMove(4,5, Game.X);
+    assertFalse(board.isDisconnected(5,5));
+    assertTrue(board.isDisconnected(20,20));
+  }
+
+  /**
    * Test addMove().
    */
   @Test
@@ -119,6 +143,12 @@ public class GameBoardTest {
 
     assertFalse(board.addMove(move, Game.X));
     assertFalse(board.addMove(20,20, Game.X));
+  }
+
+  @Test
+  public void testIsOutOfMoves() {
+    GameBoard smallBoard = new GameBoard(5);
+    assertTrue(smallBoard.isOutOfMoves());
   }
 
   /**
@@ -285,6 +315,64 @@ public class GameBoardTest {
 
     assertEquals("[ , X, X, X, X,  ]",
             Arrays.toString(board.getDiagonal(0,5,5,0)));
+  }
+
+
+  /**
+   * Test countConsecutive().
+   */
+  @Test
+  public void testCountConsecutive() {
+    char[] array1;
+    array1 = new char[]{' ', 'X', 'X', ' ', ' ', 'X', 'X', 'X', 'X'};
+    assertEquals(board.countConsecutive(array1, 'X').getMaxStreakLength(), 4);
+
+    array1 = new char[]{' ', 'X', 'X', ' ', 'O', 'X', 'X', 'X', 'X'};
+    assertEquals(board.countConsecutive(array1, 'X').getMaxStreakLength(), 2);
+
+    array1 = new char[]{'O', 'X', 'X', 'O', 'O', 'X', 'X', 'X', 'O'};
+    assertEquals(board.countConsecutive(array1, 'X').getMaxStreakLength(), 0);
+
+    char[] array2 = new char[12];
+
+    for (int i = 0; i < 12; i++) {
+      array2[i] = Game.EMPTY;
+    }
+
+    array2[1] = Game.X;
+    array2[4] = Game.X;
+    array2[5] = Game.X;
+    array2[7] = Game.X;
+    array2[8] = Game.X;
+    assertEquals(board.countConsecutive(array2, 'X').toString(),
+            "Streak length 2, count: 2, unblockedCount: 2\n");
+
+    array2[9] = Game.O;
+    assertEquals(board.countConsecutive(array2, 'X').toString(),
+            "Streak length 2, count: 2, unblockedCount: 1\n");
+  }
+
+  @Test
+  public void testCheckBoardForStreaks() {
+    board = new GameBoard(15);
+    board.initializeBoard();
+    board.addMove(2,1, Game.X);
+    board.addMove(2,2, Game.X);
+    board.addMove(3,2, Game.X);
+    board.addMove(3,3, Game.X);
+    board.addMove(4,4, Game.X);
+
+    board.addMove(1,1, Game.O);
+    board.addMove(1,2, Game.O);
+    board.addMove(2,3, Game.O);
+
+    assertEquals(board.checkBoardForStreaks(new Player(Game.X)).toString(),
+            "Streak length 2, count: 4, unblockedCount: 2\n" +
+                    "Streak length 3, count: 1, unblockedCount: 0\n");
+
+    assertEquals(board.checkBoardForStreaks(new Player(Game.O)).toString(),
+            "Streak length 2, count: 2, unblockedCount: 2\n");
+
   }
 
   public static void main(String[] args) {
