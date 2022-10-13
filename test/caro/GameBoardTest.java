@@ -6,6 +6,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
+
+import caro.board.BoardSubset;
+import caro.board.GameBoard;
 
 /**
  * JUnit test class for GameBoard.
@@ -172,34 +176,6 @@ public class GameBoardTest {
   }
 
   /**
-   * Test calculateSearchRange().
-   */
-  @Test
-  public void testCalculateSearchRange() {
-    //test case: close to top left
-    SearchRange range1 = board.calculateSearchRange(new int[]{0, 0}, Game.WIN_CONDITION);
-    assertEquals(range1.getBotRow(), 4);
-    assertEquals(range1.getRightCol(), 4);
-    assertEquals(range1.getTopRow(), 0);
-    assertEquals(range1.getLeftCol(), 0);
-
-    //test case: close to bottom right
-    SearchRange range2 = board.calculateSearchRange(new int[]{8, 8}, Game.WIN_CONDITION);
-    assertEquals(range2.getBotRow(), 9);
-    assertEquals(range2.getRightCol(), 9);
-    assertEquals(range2.getTopRow(), 4);
-    assertEquals(range2.getLeftCol(), 4);
-
-    // test case: middle of board
-    SearchRange range3 = board.calculateSearchRange(new int[]{4, 4}, Game.WIN_CONDITION);
-    assertEquals(range3.getBotRow(), 8);
-    assertEquals(range3.getRightCol(), 8);
-    assertEquals(range3.getTopRow(), 0);
-    assertEquals(range3.getLeftCol(), 0);
-  }
-
-
-  /**
    * Test checkConsecutiveHorizontal().
    */
   @Test
@@ -207,8 +183,8 @@ public class GameBoardTest {
     board.initializeBoard();
     int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
-    assertEquals(1,
-            board.checkConsecutiveHorizontal(move, board.calculateSearchRange(move,Game.WIN_CONDITION)));
+    assertEquals(1, board.checkConsecutiveHorizontal(
+            move, new BoardSubset(move, DIMENSION, Game.WIN_CONDITION)));
 
     board.addMove(new int[]{0, 1}, Game.X);
     board.addMove(new int[]{0, 2}, Game.X);
@@ -217,7 +193,8 @@ public class GameBoardTest {
     board.addMove(move, Game.X);
 
     assertEquals(5,
-            board.checkConsecutiveHorizontal(move, board.calculateSearchRange(move,Game.WIN_CONDITION)));
+            board.checkConsecutiveHorizontal(
+                    move, new BoardSubset(move, DIMENSION, Game.WIN_CONDITION)));
   }
 
   /**
@@ -229,7 +206,7 @@ public class GameBoardTest {
     int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
     assertEquals(1,
-            board.checkConsecutiveVertical(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
+            board.checkConsecutiveVertical(move, new BoardSubset(move, DIMENSION, Game.WIN_CONDITION)));
 
     board.addMove(new int[]{1, 0}, Game.X);
     board.addMove(new int[]{2, 0}, Game.X);
@@ -238,7 +215,7 @@ public class GameBoardTest {
     board.addMove(move, Game.X);
 
     assertEquals(5,
-            board.checkConsecutiveVertical(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
+            board.checkConsecutiveVertical(move, new BoardSubset(move, DIMENSION, Game.WIN_CONDITION)));
   }
 
   /**
@@ -250,12 +227,12 @@ public class GameBoardTest {
     int[] move = new int[]{0, 0};
     board.addMove(move, Game.X);
     assertEquals(1,
-            board.checkConsecutiveDiag(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
+            board.checkConsecutiveDiag(move, new BoardSubset(move, DIMENSION, Game.WIN_CONDITION)));
 
     move = new int[]{1, 1};
     board.addMove(move, Game.X);
     assertEquals(2,
-            board.checkConsecutiveDiag(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
+            board.checkConsecutiveDiag(move, new BoardSubset(move, DIMENSION, Game.WIN_CONDITION)));
 
     board.addMove(new int[]{2, 3}, Game.X);
     board.addMove(new int[]{1, 4}, Game.X);
@@ -264,7 +241,7 @@ public class GameBoardTest {
     board.addMove(new int[]{3, 2}, Game.X);
     move = new int[]{3, 2};
     assertEquals(4,
-            board.checkConsecutiveDiag(move, board.calculateSearchRange(move, Game.WIN_CONDITION)));
+            board.checkConsecutiveDiag(move, new BoardSubset(move, DIMENSION, Game.WIN_CONDITION)));
   }
 
   /**
@@ -373,6 +350,69 @@ public class GameBoardTest {
     assertEquals(board.checkBoardForStreaks(new Player(Game.O)).toString(),
             "Streak length 2, count: 2, unblockedCount: 2\n");
 
+  }
+
+  /**
+   * Test getActionSet().
+   */
+  @Test
+  public void testGetActionSet() {
+    board.initializeBoard();
+    board.addMove(2,3,Game.X);
+    int[] lastMove = new int[] {2,2};
+    board.addMove(lastMove, Game.O);
+
+    List<int[]> actionSetActual = board.getActionSet(lastMove,3);
+
+    assertTrue(Arrays.toString(actionSetActual.get(0)).equals("[1, 1]"));
+    assertTrue(Arrays.toString(actionSetActual.get(1)).equals("[1, 2]"));
+    assertTrue(Arrays.toString(actionSetActual.get(2)).equals("[1, 3]"));
+    assertTrue(Arrays.toString(actionSetActual.get(3)).equals("[1, 4]"));
+    assertTrue(Arrays.toString(actionSetActual.get(4)).equals("[2, 1]"));
+    assertTrue(Arrays.toString(actionSetActual.get(5)).equals("[2, 4]"));
+    assertTrue(Arrays.toString(actionSetActual.get(6)).equals("[3, 1]"));
+    assertTrue(Arrays.toString(actionSetActual.get(7)).equals("[3, 2]"));
+    assertTrue(Arrays.toString(actionSetActual.get(8)).equals("[3, 3]"));
+    assertTrue(Arrays.toString(actionSetActual.get(9)).equals("[3, 4]"));
+
+    board.addMove(1,3,Game.X);
+    actionSetActual = board.getActionSet(lastMove,3);
+    assertTrue(Arrays.toString(actionSetActual.get(0)).equals("[0, 2]"));
+    assertTrue(Arrays.toString(actionSetActual.get(1)).equals("[0, 3]"));
+    assertTrue(Arrays.toString(actionSetActual.get(2)).equals("[0, 4]"));
+    assertTrue(Arrays.toString(actionSetActual.get(3)).equals("[1, 1]"));
+    assertTrue(Arrays.toString(actionSetActual.get(4)).equals("[1, 2]"));
+  }
+
+  /**
+   * Test boardState().
+   */
+  @Test
+  public void testBoardState() {
+    board.initializeBoard();
+    board.addMove(2,3,Game.X);
+    int[] lastMove = new int[] {2,2};
+    board.addMove(lastMove, Game.O);
+    GameBoard newBoard = board.getBoardState(new int[]{2, 4}, new Player(Game.X));
+
+    newBoard.toString().equals(
+            "___________________\n" +
+                    "|  |00|01|02|03|04|\n" +
+                    "|00|  |  |  |  |  |\n" +
+                    "|01|  |  |  |  |  |\n" +
+                    "|02|  |  |O |X |X |\n" +
+                    "|03|  |  |  |  |  |\n" +
+                    "|04|  |  |  |  |  |\n" +
+                    "-------------------\n");
+    board.toString().equals(
+            "___________________\n" +
+                    "|  |00|01|02|03|04|\n" +
+                    "|00|  |  |  |  |  |\n" +
+                    "|01|  |  |  |  |  |\n" +
+                    "|02|  |  |O |X |  |\n" +
+                    "|03|  |  |  |  |  |\n" +
+                    "|04|  |  |  |  |  |\n" +
+                    "-------------------\n");
   }
 
   public static void main(String[] args) {

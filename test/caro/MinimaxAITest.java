@@ -3,8 +3,7 @@ package caro;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
+import caro.board.GameBoard;
 
 import static org.junit.Assert.*;
 
@@ -37,58 +36,12 @@ public class MinimaxAITest {
     }
   }
 
-  /**
-   * Test getActionSet().
-   */
+
   @Test
-  public void testGetActionSet() {
-    List<int[]> actionSetActual = ai.getActionSet(lastMove,board,3);
-
-    assertTrue(Arrays.toString(actionSetActual.get(0)).equals("[1, 1]"));
-    assertTrue(Arrays.toString(actionSetActual.get(1)).equals("[1, 2]"));
-    assertTrue(Arrays.toString(actionSetActual.get(2)).equals("[1, 3]"));
-    assertTrue(Arrays.toString(actionSetActual.get(3)).equals("[1, 4]"));
-    assertTrue(Arrays.toString(actionSetActual.get(4)).equals("[2, 1]"));
-    assertTrue(Arrays.toString(actionSetActual.get(5)).equals("[2, 4]"));
-    assertTrue(Arrays.toString(actionSetActual.get(6)).equals("[3, 1]"));
-    assertTrue(Arrays.toString(actionSetActual.get(7)).equals("[3, 2]"));
-    assertTrue(Arrays.toString(actionSetActual.get(8)).equals("[3, 3]"));
-    assertTrue(Arrays.toString(actionSetActual.get(9)).equals("[3, 4]"));
-
-    board.addMove(1,3,Game.X);
-    actionSetActual = ai.getActionSet(lastMove,board,3);
-    assertTrue(Arrays.toString(actionSetActual.get(0)).equals("[0, 2]"));
-    assertTrue(Arrays.toString(actionSetActual.get(1)).equals("[0, 3]"));
-    assertTrue(Arrays.toString(actionSetActual.get(2)).equals("[0, 4]"));
-    assertTrue(Arrays.toString(actionSetActual.get(3)).equals("[1, 1]"));
-    assertTrue(Arrays.toString(actionSetActual.get(4)).equals("[1, 2]"));
+  public void testCalculateUtility() {
   }
 
-  /**
-   * Test boardState().
-   */
   @Test
-  public void testBoardState() {
-    GameBoard newBoard = ai.boardState(new int[]{2, 4}, aiPlayer);
-
-    newBoard.toString().equals(
-            "___________________\n" +
-            "|  |00|01|02|03|04|\n" +
-            "|00|  |  |  |  |  |\n" +
-            "|01|  |  |  |  |  |\n" +
-            "|02|  |  |O |X |X |\n" +
-            "|03|  |  |  |  |  |\n" +
-            "|04|  |  |  |  |  |\n" +
-            "-------------------\n");
-    board.toString().equals(
-            "___________________\n" +
-                    "|  |00|01|02|03|04|\n" +
-                    "|00|  |  |  |  |  |\n" +
-                    "|01|  |  |  |  |  |\n" +
-                    "|02|  |  |O |X |  |\n" +
-                    "|03|  |  |  |  |  |\n" +
-                    "|04|  |  |  |  |  |\n" +
-                    "-------------------\n");
+  public void testCalculateUtilityOfBoardState() {
   }
-
 }

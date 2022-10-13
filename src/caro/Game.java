@@ -1,5 +1,7 @@
 package caro;
 
+import caro.board.GameBoard;
+
 /**
  * Game class.
  */
@@ -73,7 +75,7 @@ public class Game {
   }
 
   /**
-   * Simulate game play.
+   * Simulate game play with two human players.
    */
   public void gamePlay() {
     int[] currMove;
@@ -105,6 +107,51 @@ public class Game {
     // if board has no more valid move but no win condition is met, declare draw
     System.out.println("Congrats! You BOTH win!");
   }
+
+  /**
+   * Simulate game play with one AI player, starting the game. 
+   */
+  public void gamePlayAI() {
+    int[] currMove = new int[0];
+    MinimaxAI ai = new MinimaxAI(board, playerX, playerO);
+    
+    //calculate maximum number of moves possible with this board size
+    int maxMoves = (int) Math.pow(this.boardDimension, 2);
+
+    // loop to get moves until run out of possible moves or a player win
+    for (int i = 0; i < maxMoves; i++) {
+      if (i == 0) {
+        currMove = ai.minimax(board, null,true);
+        this.board.addMove(currMove, this.currentPlayer.getSymbol());
+      }
+      else if ((i % 2) == 0) {
+        currMove = ai.minimax(board, currMove,false);
+        this.board.addMove(currMove, this.currentPlayer.getSymbol());
+      }
+      
+      // loop until valid move is obtained and added to board
+      while ((i % 2) == 1) {
+        currMove = this.currentPlayer.obtainMove();
+        if ((currMove == null) || (!this.board.addMove(currMove, this.currentPlayer.getSymbol()))) {
+          System.out.println("Move is illegal! Please input another move!");
+        } else {
+          break;
+        }
+      }
+
+      System.out.println(board);
+      // check for win condition, if found, break out of loop
+      if (this.board.checkWinningMove(currMove)) {
+        System.out.println("Player " + currentPlayer.getSymbol() + " wins!");
+        return;
+      }
+      this.switchPlayer();
+    }
+
+    // if board has no more valid move but no win condition is met, declare draw
+    System.out.println("Congrats! You BOTH win!");
+  }
+
 
 }
 

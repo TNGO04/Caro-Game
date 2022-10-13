@@ -1,7 +1,7 @@
 package caro.streak;
 
 /**
- * Class to store data from checking consecutive streaks in an array.
+ * Class to store counts of streak of specific length.
  */
 public class Streak {
   private final int length;
@@ -76,16 +76,16 @@ public class Streak {
   }
 
   /**
-   * Update CheckResult object with newly found streak.
+   * Update Streak object count with a new streak of similar length.
    *
-   * @param blockMarker block marker of streak
+   * @param blockMarker block marker of streak to be added
    */
   public void updateStreak(int blockMarker) throws IllegalArgumentException {
     if (blockMarker < 0) {
       throw new IllegalArgumentException("Block Marker cannot be negative.");
     }
 
-    // only update CheckResult if other streak is not blocked on both sides
+    // only update Streak counts if other streak is not blocked on both sides
     if (blockMarker < 2) {
       this.count++;
       // increase unblocked count if current streak is not blocked

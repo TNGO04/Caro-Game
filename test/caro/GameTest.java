@@ -46,12 +46,14 @@ public class GameTest {
 
 
   /**
-   * Play game.
+   * Play game.28
+   *1018
+   *
    * @param args
    */
   public static void main(String [] args) {
     Game caro = new Game(15);
     caro.setUpGame();
-    caro.gamePlay();
+    caro.gamePlayAI();
   }
 }

@@ -3,7 +3,7 @@ package caro.streak;
 import caro.Game;
 
 /**
- * StreakList class represents an objected that stores multiple Streak objects,
+ * StreakList class represents an object that stores multiple Streak objects,
  * each representing streaks of a certain length.
  */
 public class StreakList {
@@ -50,7 +50,7 @@ public class StreakList {
   }
 
   /**
-   * Add another StreakList to this StreakList.
+   * Add counts from another StreakList to this StreakList.
    *
    * @param other other StreakList to be added
    */
@@ -65,7 +65,7 @@ public class StreakList {
   }
 
   /**
-   * Get the maximum streak length in StreakList.
+   * Within StreakList, find the largest streak's length.
    *
    * @return maximum streak length
    */
@@ -99,9 +99,9 @@ public class StreakList {
   @Override
   public String toString() {
     String s = "";
-    for (int i = 0; i < this.length; i++) {
-      if (this.list[i].getCount() > 0) {
-        s += this.list[i].toString();
+    for (Streak streak : this.list) {
+      if (streak.getCount() > 0) {
+        s += streak.toString();
       }
     }
 

@@ -1,9 +1,10 @@
-package caro.streak;
+package caro;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import caro.Game;
+import caro.streak.StreakList;
 
 import static org.junit.Assert.*;
 

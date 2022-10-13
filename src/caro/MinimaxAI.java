@@ -1,6 +1,8 @@
 package caro;
 
+import caro.board.GameBoard;
 import caro.streak.StreakList;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -13,10 +15,12 @@ public class MinimaxAI {
   GameBoard board;
   Player aiPlayer;
   Player opponent;
+  private int searchRadius;
+  private int searchDepth;
 
-  private final double unblockedFourUtility = 1.0, blockedFourUtility = 0.5;
+  private final double unblockedFourUtility = 1.0, blockedFourUtility = 0.75;
   private final double unblockedThreeUtility = 0.5, blockedThreeUtility = 0.2;
-  private final double unblockedTwoUtility = 0.15, blockedTwoUtility = 0.05;
+  private final double unblockedTwoUtility = 0.10, blockedTwoUtility = 0.05;
 
   /**
    * Constructor for MinimaxAI.
@@ -27,18 +31,52 @@ public class MinimaxAI {
     if ((board == null) || (aiPlayer == null) || (opponent == null)) {
       throw new IllegalArgumentException("Input object is null.");
     }
+    if (aiPlayer == opponent) {
+      throw new IllegalArgumentException("AI Player and opponent must be different.");
+    }
     this.board = board;
     this.aiPlayer = aiPlayer;
     this.opponent = opponent;
+    this.searchDepth = 2;
+    this.searchRadius = 10;
   }
 
   /**
-   * Get a random move.
+   * Constructor.
+   * @param board GameBoard representing current game board
+   * @param aiPlayer  player controlled by AI
+   * @param opponent  opponent player of aiPlayer
+   * @param searchDepth depth of search tree for minimax
+   * @param searchRadius  search radius
+   * @throws IllegalArgumentException
+   */
+  public MinimaxAI(GameBoard board, Player aiPlayer, Player opponent, int searchDepth,
+                   int searchRadius) throws IllegalArgumentException {
+    this(board, aiPlayer, opponent);
+    this.searchDepth = searchDepth;
+    this.searchRadius = searchRadius;
+  }
+
+  /**
+   * Get a random move with a bias for center of board.
    */
   public int[] getRandomMove() {
     Random rand = new Random();
-    int row = rand.nextInt(0,this.board.getBoardDimension());
-    int column = rand.nextInt(0,this.board.getBoardDimension());
+    int row, column;
+    int dimension = this.board.getBoardDimension();
+    int halfDimension = dimension / 4;
+
+    if (rand.nextDouble(0,1) < 0.7) {
+      row = rand.nextInt(0 + halfDimension,this.board.getBoardDimension() - halfDimension);
+      column = rand.nextInt(0 + halfDimension,this.board.getBoardDimension() - halfDimension);
+    }
+    else {
+      row = rand.nextInt(0,this.board.getBoardDimension());
+      column = rand.nextInt(0,this.board.getBoardDimension());
+    }
+
+
+
     return new int[]{row, column};
   }
 
@@ -51,49 +89,6 @@ public class MinimaxAI {
     return actionList.get(index);
   }
 
-
-  /**
-   * Get a set of potential action (move) for MinimaxAI to take.
-   * Given the size of the board, it is computationally expensive to list all possible move.
-   * Instead, in this method, we only consider moves within a radius of the last move made by
-   * player. In addition, since the objective of a move is either blocking an opponent or expanding
-   * one's streak, we only consider potential moves that are adjacent to another previously-made
-   * moves. Disconnected potential moves are therefore not added to actionSet.
-   *
-   * @param lastMove :   last move made in the game
-   * @return list of possible moves to make
-   */
-  public List<int[]> getActionSet(int[] lastMove, GameBoard boardState, int radius) {
-    SearchRange search = boardState.calculateSearchRange(lastMove, radius);
-    List<int[]> actionSet = new ArrayList<int[]>();
-
-    for (int row = search.getTopRow(); row <= search.getBotRow(); row++) {
-      for (int col = search.getLeftCol(); col <= search.getRightCol(); col++) {
-        if (boardState.isEmpty(row, col) && !boardState.isDisconnected(row, col)) {
-          actionSet.add(new int[]{row, col});
-        }
-      }
-    }
-    return actionSet;
-  }
-
-  /**
-   * Return board object after a potential move is made.
-   *
-   * @param move move to be made
-   * @return new board state
-   */
-  public GameBoard boardState(int[] move, Player player) throws IllegalArgumentException {
-    // if move is illegal with current board state, throw exception
-    if (!this.board.isLegalMove(move)) {
-      throw new IllegalArgumentException("Invalid move");
-    }
-
-    //get deep copy of board and add move
-    GameBoard newBoard = new GameBoard(this.board);
-    newBoard.addMove(move, player.getSymbol());
-    return newBoard;
-  }
 
 
 
@@ -137,20 +132,110 @@ public class MinimaxAI {
     }
   }
 
+  /**
+   * Calculate utility value of a board state, based on streaks found for aiPlayer and opponent.
+   * @param boardState    boardState to calculate utility from
+   * @return  utility
+   */
   public double calculateUtilityOfBoardState(GameBoard boardState) {
-    return (this.calculateUtility(boardState.checkBoardForStreaks(aiPlayer))
-            - this.calculateUtility(boardState.checkBoardForStreaks(opponent)));
+    double aiUtility = this.calculateUtility(boardState.checkBoardForStreaks(aiPlayer));
+    double opponentUtility = this.calculateUtility(boardState.checkBoardForStreaks(opponent));
+    return (aiUtility - opponentUtility);
   }
 
-  /*
-  public double maximizer(GameBoard boardState, double maxUtility, int[] lastMove) {
-    if (boardState.isOutOfMoves()) {
+
+  /**
+   *
+   * @param boardState
+   * @param maxUtility
+   * @param lastMove
+   * @return
+   */
+
+  public double maximizer(GameBoard boardState, double maxUtility, int[] lastMove, int depth) {
+    if (boardState.checkWinningMove(lastMove)) {
+      if (boardState.returnPosition(lastMove) == aiPlayer.getSymbol()) {
+        return 1.0;
+      }
+      else {
+        return -1.0;
+      }
+    }
+
+    if (boardState.isOutOfMoves() || (depth >= this.searchDepth)) {
+      return this.calculateUtilityOfBoardState(boardState);
+    }
+    double utility = Double.NEGATIVE_INFINITY;
+
+    List<int[]> actionSet = boardState.getActionSet(lastMove, this.searchRadius);
+
+    for(int[] newMove : actionSet) {
+      utility = Math.max(utility,
+              minimizer(boardState.getBoardState(newMove, opponent),utility, newMove,depth + 1));
+      if (utility > maxUtility) {
+        break;
+      }
+    }
+    return utility;
+  }
+
+  public double minimizer(GameBoard boardState, double minUtility, int[] lastMove, int depth) {
+    if (boardState.checkWinningMove(lastMove)) {
+      if (boardState.returnPosition(lastMove) == aiPlayer.getSymbol()) {
+        return 1.0;
+      }
+      else {
+        return -1.0;
+      }
+    }
+
+    if (boardState.isOutOfMoves() || (depth >= this.searchDepth)) {
       return this.calculateUtilityOfBoardState(boardState);
     }
 
-    double utility = Double.NEGATIVE_INFINITY;
+    double utility = Double.POSITIVE_INFINITY;
 
+    List<int[]> actionSet = boardState.getActionSet(lastMove, this.searchRadius);
 
+    for(int[] newMove : actionSet) {
+      utility = Math.min(utility,
+              maximizer(boardState.getBoardState(newMove, opponent),utility, newMove,depth + 1));
+      if (utility < minUtility) {
+        break;
+      }
+    }
+    return utility;
   }
-*/
+
+  public int[] minimax (GameBoard boardState, int[] lastMove, boolean firstMove) {
+    if (firstMove) {
+      return this.getRandomMove();
+    }
+    if (boardState.isOutOfMoves()) {
+      return null;
+    }
+
+    List<int[]> optimalMoveList = new ArrayList<int[]>();
+    List<int[]> actionSet = boardState.getActionSet(lastMove, this.searchRadius);
+
+
+    double utility = Double.NEGATIVE_INFINITY;
+    double moveUtility;
+    for (int[] newMove : actionSet) {
+      moveUtility = minimizer(boardState.getBoardState(newMove, aiPlayer),utility, newMove,1);
+
+      if (moveUtility == 1) {
+        return newMove;
+      }
+      if (moveUtility == utility) {
+        optimalMoveList.add(newMove);
+      }
+      if (moveUtility > utility) {
+        utility = moveUtility;
+        optimalMoveList.clear();
+        optimalMoveList.add(newMove);
+      }
+    }
+    return this.getRandomMove(optimalMoveList);
+  }
 }

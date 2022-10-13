@@ -1,4 +1,4 @@
-package caro.streak;
+package caro;
 
 import static org.junit.Assert.*;
 
