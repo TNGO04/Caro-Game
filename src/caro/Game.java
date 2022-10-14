@@ -120,12 +120,12 @@ public class Game {
 
     // loop to get moves until run out of possible moves or a player win
     for (int i = 0; i < maxMoves; i++) {
-      if (i == 0) {
+      if ((i % 2) == 0) {
+        if (i == 0) {
         currMove = ai.minimax(board, null,true);
-        this.board.addMove(currMove, this.currentPlayer.getSymbol());
-      }
-      else if ((i % 2) == 0) {
-        currMove = ai.minimax(board, currMove,false);
+        } else {
+          currMove = ai.minimax(board, currMove, false);
+        }
         this.board.addMove(currMove, this.currentPlayer.getSymbol());
       }
       
@@ -151,7 +151,6 @@ public class Game {
     // if board has no more valid move but no win condition is met, declare draw
     System.out.println("Congrats! You BOTH win!");
   }
-
 
 }
 

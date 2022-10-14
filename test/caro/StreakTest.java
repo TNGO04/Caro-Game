@@ -20,10 +20,10 @@ public class StreakTest {
   }
 
   /**
-   * Test getMaxStreak().
+   * Test getStreakLength().
    */
   @Test
-  public void testGetMaxStreak() {
+  public void testGetStreakLength() {
     assertEquals(0, check1.getStreakLength());
     assertEquals(4, check2.getStreakLength());
   }
@@ -58,10 +58,10 @@ public class StreakTest {
 
 
   /**
-   * Test both versions of updateCheckResult().
+   * Test both versions of updateStreak().
    */
   @Test
-  public void testUpdateCheckResult() {
+  public void testUpdateStreak() {
     check3 = new Streak(3, 1, 0);
     check3.updateStreak(1);
     assertEquals(check3.toString(), "Streak length 3, count: 2, unblockedCount: 0\n");

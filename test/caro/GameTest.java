@@ -46,8 +46,7 @@ public class GameTest {
 
 
   /**
-   * Play game.28
-   *1018
+   * Play game
    *
    * @param args
    */

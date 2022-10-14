@@ -32,6 +32,20 @@ public class StreakListTest {
   }
 
   /**
+   * Test getMaxStreakLength().
+   */
+  @Test
+  public void testGetMaxStreakLength() {
+    list1.addStreak(4,1);
+    list1.addStreak(2,0);
+    assertEquals(4,list1.getMaxStreakLength());
+    list1.addStreak(5,2);
+    assertEquals(5,list1.getMaxStreakLength());
+    list1.addStreak(5,0);
+    assertEquals(5,list1.getMaxStreakLength());
+  }
+
+  /**
    * Test getStreak().
    */
   @Test
@@ -40,12 +54,6 @@ public class StreakListTest {
             "Streak length 4, count: 0, unblockedCount: 0\n");
   }
 
-  @Test
-  public void testToString() {
-    assertEquals(list1.toString(), "There is no streak.\n");
-    list1.addStreak(4,1);
-    assertEquals(list1.toString(), "Streak length 4, count: 1, unblockedCount: 0\n");
-  }
 
   /**
    * Test addStreak().
@@ -59,6 +67,10 @@ public class StreakListTest {
     list1.addStreak(3,0);
     assertEquals(list1.toString(), "Streak length 3, count: 1, unblockedCount: 1\n" +
             "Streak length 4, count: 1, unblockedCount: 0\n");
+    list1.addStreak(6,1);
+    assertEquals(list1.toString(), "Streak length 3, count: 1, unblockedCount: 1\n" +
+            "Streak length 4, count: 1, unblockedCount: 0\n" +
+            "Streak length 5, count: 1, unblockedCount: 0\n");
   }
 
   /**
@@ -67,19 +79,17 @@ public class StreakListTest {
   @Test
   public void testAddStreakList() {
     list2.addStreak(4,1);
+    list2.addStreak(3,0);
     list1.addStreakList(list2);
+    assertEquals(list1.toString(), "Streak length 3, count: 1, unblockedCount: 1\n" +
+            "Streak length 4, count: 1, unblockedCount: 0\n");
+  }
+
+  @Test
+  public void testToString() {
+    assertEquals(list1.toString(), "There is no streak.\n");
+    list1.addStreak(4,1);
     assertEquals(list1.toString(), "Streak length 4, count: 1, unblockedCount: 0\n");
   }
-
-  /**
-   * Test getMaxStreakLength().
-   */
-  @Test
-  public void testGetMaxStreakLength() {
-    list1.addStreak(4,1);
-    list1.addStreak(2,0);
-    assertEquals(4,list1.getMaxStreakLength());
-  }
-
 
 }

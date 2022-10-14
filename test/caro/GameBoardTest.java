@@ -56,15 +56,6 @@ public class GameBoardTest {
   }
 
   /**
-   * Test for illegal argument for returnPosition() method.
-   */
-  @Test(expected = IllegalArgumentException.class)
-  public void testBadArgument() {
-    board.returnPosition(20,18);
-  }
-
-
-  /**
    * Test initializeBoard() method.
    */
   @Test
@@ -79,12 +70,32 @@ public class GameBoardTest {
   }
 
   /**
+   * Test isOutOfMoves().
+   */
+  @Test
+  public void testIsOutOfMoves() {
+    GameBoard smallBoard = new GameBoard(5);
+    assertTrue(smallBoard.isOutOfMoves());
+  }
+
+  /**
    * Test isOnBoard().
    */
   @Test
   public void testIsOnBoard() {
     assertFalse(board.isOnBoard(20,20));
     assertTrue(board.isOnBoard(new int[] {6,8}));
+  }
+
+  /**
+   * Test isEmpty().
+   */
+  @Test
+  public void testIsEmpty() {
+    this.board.initializeBoard();
+    assertTrue(board.isEmpty(5,5));
+    board.addMove(5,5, Game.X);
+    assertFalse(board.isEmpty(5,5));
   }
 
   /**
@@ -96,13 +107,14 @@ public class GameBoardTest {
     assertEquals(Game.EMPTY, this.board.returnPosition(0, 0));
   }
 
-  @Test
-  public void testIsEmpty() {
-    this.board.initializeBoard();
-    assertTrue(board.isEmpty(5,5));
-    board.addMove(5,5, Game.X);
-    assertFalse(board.isEmpty(5,5));
+  /**
+   * Test for illegal argument for returnPosition() method.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testBadArgument() {
+    board.returnPosition(20,18);
   }
+
 
   /**
    * Test isLegalMove() method.
@@ -117,6 +129,20 @@ public class GameBoardTest {
     assertFalse(board.isLegalMove(move));
 
     assertFalse(board.isLegalMove(20, 10));
+  }
+
+  /**
+   * Test addMove().
+   */
+  @Test
+  public void addMove() {
+    board.initializeBoard();
+    int[] move = new int[]{1, 1};
+    assertTrue(board.addMove(move, Game.X));
+    assertEquals(Game.X, board.returnPosition(move));
+
+    assertFalse(board.addMove(move, Game.X));
+    assertFalse(board.addMove(20,20, Game.X));
   }
 
   /**
@@ -136,24 +162,41 @@ public class GameBoardTest {
   }
 
   /**
-   * Test addMove().
+   * Test getRow().
    */
   @Test
-  public void addMove() {
-    board.initializeBoard();
-    int[] move = new int[]{1, 1};
-    assertTrue(board.addMove(move, Game.X));
-    assertEquals(Game.X, board.returnPosition(move));
+  public void testGetRow () {
+    testCheckConsecutiveHorizontal();
+    char [] testArray = new char[]{Game.X, Game.X, Game.X, Game.X, Game.X,
+            Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY};
+    assertEquals(Arrays.toString(testArray), Arrays.toString(board.getRow(0)));
+    board.addMove(0,5, Game.X);
+    assertFalse(Arrays.toString(testArray).equals(Arrays.toString(board.getRow(0))));
+  }
 
-    assertFalse(board.addMove(move, Game.X));
-    assertFalse(board.addMove(20,20, Game.X));
+  /**
+   * Test getColumn().
+   */
+  @Test
+  public void testGetColumn() {
+    testCheckConsecutiveVertical();
+    char [] testArray = new char[]{Game.X, Game.X, Game.X, Game.X, Game.X,
+            Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY};
+    assertEquals(Arrays.toString(testArray), Arrays.toString(board.getColumn(0)));
+    board.addMove(5,0, Game.X);
+    assertFalse(Arrays.toString(testArray).equals(Arrays.toString(board.getRow(0))));
   }
 
   @Test
-  public void testIsOutOfMoves() {
-    GameBoard smallBoard = new GameBoard(5);
-    assertTrue(smallBoard.isOutOfMoves());
+  public void testGetDiagonal() {
+    testCheckConsecutiveDiag();
+    assertEquals("[X, X,  ,  ,  ,  ,  ,  ,  ,  ]",
+            Arrays.toString(board.getDiagonal(0,0,9,9)));
+
+    assertEquals("[ , X, X, X, X,  ]",
+            Arrays.toString(board.getDiagonal(0,5,5,0)));
   }
+
 
   /**
    * Test toString().
@@ -257,43 +300,6 @@ public class GameBoardTest {
     lastMove = new int[]{0, 4};
     assertTrue(board.checkWinningMove(lastMove));
   }
-
-  /**
-   * Test getRow().
-   */
-  @Test
-  public void testGetRow () {
-    testCheckConsecutiveHorizontal();
-    char [] testArray = new char[]{Game.X, Game.X, Game.X, Game.X, Game.X,
-                                  Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY};
-    assertEquals(Arrays.toString(testArray), Arrays.toString(board.getRow(0)));
-    board.addMove(0,5, Game.X);
-    assertFalse(Arrays.toString(testArray).equals(Arrays.toString(board.getRow(0))));
-  }
-
-  /**
-   * Test getColumn().
-   */
-  @Test
-  public void testGetColumn() {
-    testCheckConsecutiveVertical();
-    char [] testArray = new char[]{Game.X, Game.X, Game.X, Game.X, Game.X,
-            Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY, Game.EMPTY};
-    assertEquals(Arrays.toString(testArray), Arrays.toString(board.getColumn(0)));
-    board.addMove(5,0, Game.X);
-    assertFalse(Arrays.toString(testArray).equals(Arrays.toString(board.getRow(0))));
-  }
-
-  @Test
-  public void testGetDiagonal() {
-    testCheckConsecutiveDiag();
-    assertEquals("[X, X,  ,  ,  ,  ,  ,  ,  ,  ]",
-            Arrays.toString(board.getDiagonal(0,0,9,9)));
-
-    assertEquals("[ , X, X, X, X,  ]",
-            Arrays.toString(board.getDiagonal(0,5,5,0)));
-  }
-
 
   /**
    * Test countConsecutive().

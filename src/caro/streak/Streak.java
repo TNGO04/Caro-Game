@@ -85,8 +85,9 @@ public class Streak {
       throw new IllegalArgumentException("Block Marker cannot be negative.");
     }
 
-    // only update Streak counts if other streak is not blocked on both sides
-    if (blockMarker < 2) {
+    // only update Streak counts if other streak is not blocked on both sides, with the exception
+    // of streak with length 5
+    if ((blockMarker < 2) || (this.getStreakLength() == 5)) {
       this.count++;
       // increase unblocked count if current streak is not blocked
       if (blockMarker == 0) {
@@ -101,7 +102,12 @@ public class Streak {
    * @param other other streak to be added
    */
   public void updateStreak(Streak other) {
-    if ((other.getCount() == 0) || (other.getStreakLength() != this.getStreakLength())) {
+    if  (other.getStreakLength() != this.getStreakLength()) {
+      System.out.println("Other streak is not the same length.");
+      return;
+    }
+
+    if (other.getCount() == 0) {
       return;
     }
     this.count += other.getCount();

@@ -18,9 +18,9 @@ public class MinimaxAI {
   private int searchRadius;
   private int searchDepth;
 
-  private final double unblockedFourUtility = 1.0, blockedFourUtility = 0.75;
-  private final double unblockedThreeUtility = 0.5, blockedThreeUtility = 0.2;
-  private final double unblockedTwoUtility = 0.10, blockedTwoUtility = 0.05;
+  public final static double unblockedFourUtility = 1.0, blockedFourUtility = 0.5;
+  public final static double unblockedThreeUtility = 0.6, blockedThreeUtility = 0.2;
+  public final static double unblockedTwoUtility = 0.05, blockedTwoUtility = 0.01;
 
   /**
    * Constructor for MinimaxAI.
@@ -37,8 +37,8 @@ public class MinimaxAI {
     this.board = board;
     this.aiPlayer = aiPlayer;
     this.opponent = opponent;
-    this.searchDepth = 2;
-    this.searchRadius = 10;
+    this.searchDepth = 4;
+    this.searchRadius = 7;
   }
 
   /**
@@ -59,23 +59,16 @@ public class MinimaxAI {
 
   /**
    * Get a random move with a bias for center of board.
+   * A position at the center of board allows for more opportunities to expand; therefore, this
+   * random move generator favors position mid-board.
    */
   public int[] getRandomMove() {
     Random rand = new Random();
-    int row, column;
-    int dimension = this.board.getBoardDimension();
-    int halfDimension = dimension / 4;
+    int bound1 = (int) Math.ceil(this.board.getBoardDimension() / 2);
+    int bound2 = (int) Math.floor(this.board.getBoardDimension() / 2) + 1;
 
-    if (rand.nextDouble(0,1) < 0.7) {
-      row = rand.nextInt(0 + halfDimension,this.board.getBoardDimension() - halfDimension);
-      column = rand.nextInt(0 + halfDimension,this.board.getBoardDimension() - halfDimension);
-    }
-    else {
-      row = rand.nextInt(0,this.board.getBoardDimension());
-      column = rand.nextInt(0,this.board.getBoardDimension());
-    }
-
-
+    int row = rand.nextInt(bound1) + rand.nextInt(bound2);
+    int column = rand.nextInt(bound1) + rand.nextInt(bound2);
 
     return new int[]{row, column};
   }
@@ -140,6 +133,15 @@ public class MinimaxAI {
   public double calculateUtilityOfBoardState(GameBoard boardState) {
     double aiUtility = this.calculateUtility(boardState.checkBoardForStreaks(aiPlayer));
     double opponentUtility = this.calculateUtility(boardState.checkBoardForStreaks(opponent));
+
+    if ((aiUtility == 1) && (opponentUtility < 1)) {
+      return 1;
+    }
+
+    if ((aiUtility < 1) && (opponentUtility == 1)) {
+      return -1;
+    }
+
     return (aiUtility - opponentUtility);
   }
 
@@ -171,8 +173,8 @@ public class MinimaxAI {
 
     for(int[] newMove : actionSet) {
       utility = Math.max(utility,
-              minimizer(boardState.getBoardState(newMove, opponent),utility, newMove,depth + 1));
-      if (utility > maxUtility) {
+              minimizer(boardState.getBoardState(newMove, aiPlayer),utility, newMove,depth + 1));
+      if (utility >= maxUtility) {
         break;
       }
     }
@@ -200,7 +202,7 @@ public class MinimaxAI {
     for(int[] newMove : actionSet) {
       utility = Math.min(utility,
               maximizer(boardState.getBoardState(newMove, opponent),utility, newMove,depth + 1));
-      if (utility < minUtility) {
+      if (utility <= minUtility) {
         break;
       }
     }
@@ -218,15 +220,11 @@ public class MinimaxAI {
     List<int[]> optimalMoveList = new ArrayList<int[]>();
     List<int[]> actionSet = boardState.getActionSet(lastMove, this.searchRadius);
 
-
     double utility = Double.NEGATIVE_INFINITY;
     double moveUtility;
     for (int[] newMove : actionSet) {
       moveUtility = minimizer(boardState.getBoardState(newMove, aiPlayer),utility, newMove,1);
 
-      if (moveUtility == 1) {
-        return newMove;
-      }
       if (moveUtility == utility) {
         optimalMoveList.add(newMove);
       }

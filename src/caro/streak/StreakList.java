@@ -21,47 +21,12 @@ public class StreakList {
   }
 
   /**
-   * Add a streak to streak list.
-   *
-   * @param currentStreak length of streak being added
-   * @param blockMarker   block marker of streak being added
-   */
-  public void addStreak(int currentStreak, int blockMarker) throws IllegalArgumentException {
-    if (currentStreak < 0) {
-      throw new IllegalArgumentException("Streak Length cannot be negative.");
-    }
-    if ((currentStreak == 0) || (currentStreak == 1)) {
-      return;
-    }
-    if (currentStreak >= Game.WIN_CONDITION) {
-      this.list[this.length - 1].updateStreak(blockMarker);
-    } else {
-      this.list[currentStreak - 2].updateStreak(blockMarker);
-    }
-  }
-
-  /**
    * Return number of Streak in StreakList.
    *
    * @return length of StreakList
    */
   public int getLength() {
     return this.length;
-  }
-
-  /**
-   * Add counts from another StreakList to this StreakList.
-   *
-   * @param other other StreakList to be added
-   */
-  public void addStreakList(StreakList other) {
-    if (this.getLength() != other.getLength()) {
-      return;
-    }
-
-    for (int i = 0; i < this.getLength(); i++) {
-      this.list[i].updateStreak(other.list[i]);
-    }
   }
 
   /**
@@ -90,6 +55,42 @@ public class StreakList {
     }
     return this.list[index];
   }
+
+  /**
+   * Add a streak to streak list.
+   *
+   * @param currentStreak length of streak being added
+   * @param blockMarker   block marker of streak being added
+   */
+  public void addStreak(int currentStreak, int blockMarker) throws IllegalArgumentException {
+    if (currentStreak < 0) {
+      throw new IllegalArgumentException("Streak Length cannot be negative.");
+    }
+    if ((currentStreak == 0) || (currentStreak == 1)) {
+      return;
+    }
+    if (currentStreak >= Game.WIN_CONDITION) {
+      this.list[this.length - 1].updateStreak(blockMarker);
+    } else {
+      this.list[currentStreak - 2].updateStreak(blockMarker);
+    }
+  }
+
+  /**
+   * Add counts from another StreakList to this StreakList.
+   *
+   * @param other other StreakList to be added
+   */
+  public void addStreakList(StreakList other) {
+    if (this.getLength() != other.getLength()) {
+      return;
+    }
+
+    for (int i = 0; i < this.getLength(); i++) {
+      this.list[i].updateStreak(other.list[i]);
+    }
+  }
+
 
   /**
    * toString method for StreakList object.
