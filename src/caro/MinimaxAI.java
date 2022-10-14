@@ -19,8 +19,8 @@ public class MinimaxAI {
   private int searchDepth;
 
   public final static double unblockedFourUtility = 1.0, blockedFourUtility = 0.5;
-  public final static double unblockedThreeUtility = 0.6, blockedThreeUtility = 0.2;
-  public final static double unblockedTwoUtility = 0.05, blockedTwoUtility = 0.01;
+  public final static double unblockedThreeUtility = 0.5, blockedThreeUtility = 0.1;
+  public final static double unblockedTwoUtility = 0.04, blockedTwoUtility = 0.01;
 
   /**
    * Constructor for MinimaxAI.
@@ -37,8 +37,8 @@ public class MinimaxAI {
     this.board = board;
     this.aiPlayer = aiPlayer;
     this.opponent = opponent;
-    this.searchDepth = 4;
-    this.searchRadius = 7;
+    this.searchDepth = 2;
+    this.searchRadius = 10;
   }
 
   /**
@@ -91,8 +91,13 @@ public class MinimaxAI {
    * @param list StreakList object
    * @return utility of StreakList, ranging [0...1]
    */
-  public double calculateUtility(StreakList list) {
-    int maxStreak = list.getMaxStreakLength();
+  public double calculateUtility(StreakList list, boolean isOpponent) {
+    int shift = 0;
+    if (isOpponent) {
+      shift = 0;
+    }
+
+    int maxStreak = list.getMaxStreakLength() + shift;
 
     if (maxStreak == Game.WIN_CONDITION) {
       return 1.0;
@@ -100,11 +105,11 @@ public class MinimaxAI {
       return 0;
     } else {
       double utility = 0.0;
-      for (int i = maxStreak - 2; i >= 0; i--) {
+      for (int i = maxStreak - 2 - shift; i >= 0; i--) {
         int unblockedCount = list.getStreak(i).getUnblockedCount();
         int blockedCount = list.getStreak(i).getCount() - unblockedCount;
 
-        switch (i + 2) {
+        switch (i + 2 + shift) {
           case 2:
             utility += (unblockedCount * unblockedTwoUtility + blockedCount * blockedTwoUtility);
             break;
@@ -131,8 +136,8 @@ public class MinimaxAI {
    * @return  utility
    */
   public double calculateUtilityOfBoardState(GameBoard boardState) {
-    double aiUtility = this.calculateUtility(boardState.checkBoardForStreaks(aiPlayer));
-    double opponentUtility = this.calculateUtility(boardState.checkBoardForStreaks(opponent));
+    double aiUtility = this.calculateUtility(boardState.checkBoardForStreaks(aiPlayer), false);
+    double opponentUtility = this.calculateUtility(boardState.checkBoardForStreaks(opponent), true);
 
     if ((aiUtility == 1) && (opponentUtility < 1)) {
       return 1;
@@ -157,10 +162,10 @@ public class MinimaxAI {
   public double maximizer(GameBoard boardState, double maxUtility, int[] lastMove, int depth) {
     if (boardState.checkWinningMove(lastMove)) {
       if (boardState.returnPosition(lastMove) == aiPlayer.getSymbol()) {
-        return 1.0;
+        return 4.0;
       }
       else {
-        return -1.0;
+        return -4.0;
       }
     }
 
@@ -184,10 +189,10 @@ public class MinimaxAI {
   public double minimizer(GameBoard boardState, double minUtility, int[] lastMove, int depth) {
     if (boardState.checkWinningMove(lastMove)) {
       if (boardState.returnPosition(lastMove) == aiPlayer.getSymbol()) {
-        return 1.0;
+        return 4;
       }
       else {
-        return -1.0;
+        return -4;
       }
     }
 
@@ -221,17 +226,29 @@ public class MinimaxAI {
     List<int[]> actionSet = boardState.getActionSet(lastMove, this.searchRadius);
 
     double utility = Double.NEGATIVE_INFINITY;
-    double moveUtility;
-    for (int[] newMove : actionSet) {
-      moveUtility = minimizer(boardState.getBoardState(newMove, aiPlayer),utility, newMove,1);
+    double moveUtility, maxStreak = Double.NEGATIVE_INFINITY;
+    int currStreak;
+    GameBoard newBoardState = null;
 
-      if (moveUtility == utility) {
-        optimalMoveList.add(newMove);
+    for (int[] newMove : actionSet) {
+      newBoardState = boardState.getBoardState(newMove, aiPlayer);
+      moveUtility = minimizer(newBoardState, utility, newMove,1);
+      currStreak = newBoardState.checkMaximumConsecutive(newMove);
+
+      if ((moveUtility == utility)) {
+        if (maxStreak == currStreak) {
+          optimalMoveList.add(newMove);
+        } else if (maxStreak < currStreak) {
+          optimalMoveList.clear();
+          optimalMoveList.add(newMove);
+          maxStreak = currStreak;
+        }
       }
       if (moveUtility > utility) {
         utility = moveUtility;
         optimalMoveList.clear();
         optimalMoveList.add(newMove);
+        maxStreak = currStreak;
       }
     }
     return this.getRandomMove(optimalMoveList);

@@ -433,11 +433,15 @@ public class GameBoard {
    * @param lastMove last move made
    * @return true if win condition is met, false if not
    */
-  public boolean checkWinningMove(int[] lastMove) {
+  public boolean checkWinningMove( int[] lastMove) {
+    return (this.checkMaximumConsecutive( lastMove) >= Game.WIN_CONDITION);
+  }
+
+  public int checkMaximumConsecutive(int[] lastMove) {
     BoardSubset range = new BoardSubset(lastMove, this.getBoardDimension(), Game.WIN_CONDITION);
-    return ((this.checkConsecutiveHorizontal(lastMove, range) >= Game.WIN_CONDITION)
-            || (this.checkConsecutiveVertical(lastMove, range) >= Game.WIN_CONDITION)
-            || (this.checkConsecutiveDiag(lastMove, range) >= Game.WIN_CONDITION));
+    return Math.max(Math.max(this.checkConsecutiveHorizontal(lastMove, range),
+            this.checkConsecutiveVertical(lastMove, range)),
+            this.checkConsecutiveDiag(lastMove, range));
   }
 
   /**

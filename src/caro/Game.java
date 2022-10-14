@@ -123,6 +123,7 @@ public class Game {
       if ((i % 2) == 0) {
         if (i == 0) {
         currMove = ai.minimax(board, null,true);
+          //currMove = new int[] {11,10};
         } else {
           currMove = ai.minimax(board, currMove, false);
         }

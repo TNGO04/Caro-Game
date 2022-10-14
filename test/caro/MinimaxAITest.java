@@ -55,31 +55,31 @@ public class MinimaxAITest {
     list.addStreak(3, 1);
 
     double currentUtility = ai.unblockedTwoUtility + ai.blockedThreeUtility;
-    assertEquals(ai.calculateUtility(list), currentUtility, delta);
+    assertEquals(ai.calculateUtility(list, false), currentUtility, delta);
 
     list.addStreak(2, 0);
     list.addStreak(3, 0);
 
     currentUtility += ai.unblockedTwoUtility + ai.unblockedThreeUtility;
-    assertEquals(ai.calculateUtility(list), currentUtility, delta);
+    assertEquals(ai.calculateUtility(list, false), currentUtility, delta);
 
     list.addStreak(4, 1);
-    assertEquals(ai.calculateUtility(list),1,delta);
+    assertEquals(ai.calculateUtility(list, false),1,delta);
 
     StreakList list2 = new StreakList();
     list2.addStreak(4, 1);
     list2.addStreak(1, 1);
     currentUtility = ai.blockedFourUtility;
-    assertEquals(ai.calculateUtility(list2), currentUtility, delta);
+    assertEquals(ai.calculateUtility(list2, false), currentUtility, delta);
     list2.addStreak(2,0);
     currentUtility += ai.unblockedTwoUtility;
-    assertEquals(ai.calculateUtility(list2), currentUtility, delta);
+    assertEquals(ai.calculateUtility(list2, false), currentUtility, delta);
 
     StreakList list3 = new StreakList();
     list3.addStreak(4, 1);
     list3.addStreak(5, 2);
 
-    assertEquals(ai.calculateUtility(list3), 1, delta);
+    assertEquals(ai.calculateUtility(list3, false), 1, delta);
   }
 
   @Test
