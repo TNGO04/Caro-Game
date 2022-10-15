@@ -154,7 +154,7 @@ public class MinimaxAI extends AbstractAI{
     for (int[] newMove : actionSet) {
       utility = Math.max(utility, minimizer(boardState.getBoardState(newMove, aiPlayer),
               utility, newMove, depth + 1));
-      if (utility >= maxUtility) {
+      if (utility > maxUtility) {
         break;
       }
     }
@@ -188,7 +188,7 @@ public class MinimaxAI extends AbstractAI{
     for (int[] newMove : actionSet) {
       utility = Math.min(utility, maximizer(boardState.getBoardState(newMove, opponent),
               utility, newMove, depth + 1));
-      if (utility <= minUtility) {
+      if (utility < minUtility) {
         break;
       }
     }
