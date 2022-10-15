@@ -52,7 +52,6 @@ public class GameTest {
    */
   public static void main(String [] args) {
     Game caro = new Game(15);
-    caro.setUpGame();
-    caro.gamePlayAI();
+    caro.gamePlayTrainedAI();
   }
 }

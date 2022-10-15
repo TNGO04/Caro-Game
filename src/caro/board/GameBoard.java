@@ -275,12 +275,13 @@ public class GameBoard {
   }
 
   /**
-   * Represent board with string.
+   * Represent board with string, highlighting last move.
    *
+   * @param r   row of last move
+   * @param c   column of last move
    * @return String object which visually represents the board.
    */
-  @Override
-  public String toString() {
+  public String toString(int r, int c) {
     // make top border
     String s = "____";
     for (int col = 0; col < this.getBoardDimension(); col++) {
@@ -298,7 +299,12 @@ public class GameBoard {
       s += String.format("|%02d|", row);
       //print out character on board, separated by '|'
       for (int col = 0; col < this.getBoardDimension(); col++) {
-        s += this.returnPosition(row, col) + " |";
+        if ((r == row) && (c == col)) {
+          s += this.returnPosition(row, col) + "_|";
+        }
+        else {
+          s += this.returnPosition(row, col) + " |";
+        }
       }
       s += "\n";
     }
@@ -309,6 +315,16 @@ public class GameBoard {
     }
     s += "\n";
     return s;
+  }
+
+  /**
+   * Print out board without emphasizing last move.
+   *
+   * @return  String object representing board.
+   */
+  @Override
+  public String toString() {
+    return toString(-1, -1);
   }
 
   /**
@@ -433,10 +449,16 @@ public class GameBoard {
    * @param lastMove last move made
    * @return true if win condition is met, false if not
    */
-  public boolean checkWinningMove( int[] lastMove) {
-    return (this.checkMaximumConsecutive( lastMove) >= Game.WIN_CONDITION);
+  public boolean checkWinningMove(int[] lastMove) {
+    return (this.checkMaximumConsecutive(lastMove) >= Game.WIN_CONDITION);
   }
 
+  /**
+   * Find the longest streak length the last move was a part of.
+   *
+   * @param lastMove last move made on board
+   * @return longest streak length containing last move
+   */
   public int checkMaximumConsecutive(int[] lastMove) {
     BoardSubset range = new BoardSubset(lastMove, this.getBoardDimension(), Game.WIN_CONDITION);
     return Math.max(Math.max(this.checkConsecutiveHorizontal(lastMove, range),
@@ -545,31 +567,6 @@ public class GameBoard {
               this.getDiagonal(row, col, 0, col - row), symbol));
     }
     return list;
-  }
-
-  /**
-   * Get a set of potential action (move) for MinimaxAI to take.
-   * Given the size of the board, it is computationally expensive to list all possible move.
-   * Instead, in this method, we only consider moves within a radius of the last move made by
-   * player. In addition, since the objective of a move is either blocking an opponent or expanding
-   * one's streak, we only consider potential moves that are adjacent to another previously-made
-   * moves. Disconnected potential moves are therefore not added to actionSet.
-   *
-   * @param lastMove :   last move made in the game
-   * @return list of possible moves to make
-   */
-  public List<int[]> getActionSet(int[] lastMove, int radius) {
-    BoardSubset search = new BoardSubset(lastMove, this.getBoardDimension(), radius);
-    List<int[]> actionSet = new ArrayList<int[]>();
-
-    for (int row = search.getTopRow(); row <= search.getBotRow(); row++) {
-      for (int col = search.getLeftCol(); col <= search.getRightCol(); col++) {
-        if (this.isEmpty(row, col) && !this.isDisconnected(row, col)) {
-          actionSet.add(new int[]{row, col});
-        }
-      }
-    }
-    return actionSet;
   }
 
   /**

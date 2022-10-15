@@ -3,8 +3,10 @@ package caro;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
+import caro.AI.MinimaxAI;
 import caro.board.GameBoard;
 import caro.streak.StreakList;
 
@@ -15,7 +17,7 @@ public class MinimaxAITest {
   GameBoard board = new GameBoard(dimension);
   Player aiPlayer = new Player(Game.X);
   Player opponent = new Player(Game.O);
-  MinimaxAI ai = new MinimaxAI(board, aiPlayer, opponent);
+  MinimaxAI ai = new MinimaxAI(board.getBoardDimension(), aiPlayer, opponent);
   int[] lastMove = new int[]{2, 2};
   double delta = 0.0001;
 
@@ -30,6 +32,39 @@ public class MinimaxAITest {
   }
 
   /**
+   * Test getActionSet().
+   */
+  @Test
+  public void testGetActionSet() {
+    board.initializeBoard();
+    board.addMove(2,3,Game.X);
+    int[] lastMove = new int[] {2,2};
+    board.addMove(lastMove, Game.O);
+
+    List<int[]> actionSetActual = ai.getActionSet(board, lastMove,3);
+
+    assertTrue(Arrays.toString(actionSetActual.get(0)).equals("[1, 1]"));
+    assertTrue(Arrays.toString(actionSetActual.get(1)).equals("[1, 2]"));
+    assertTrue(Arrays.toString(actionSetActual.get(2)).equals("[1, 3]"));
+    assertTrue(Arrays.toString(actionSetActual.get(3)).equals("[1, 4]"));
+    assertTrue(Arrays.toString(actionSetActual.get(4)).equals("[2, 1]"));
+    assertTrue(Arrays.toString(actionSetActual.get(5)).equals("[2, 4]"));
+    assertTrue(Arrays.toString(actionSetActual.get(6)).equals("[3, 1]"));
+    assertTrue(Arrays.toString(actionSetActual.get(7)).equals("[3, 2]"));
+    assertTrue(Arrays.toString(actionSetActual.get(8)).equals("[3, 3]"));
+    assertTrue(Arrays.toString(actionSetActual.get(9)).equals("[3, 4]"));
+
+    board.addMove(1,3,Game.X);
+    actionSetActual = ai.getActionSet(board, lastMove,3);
+    assertTrue(Arrays.toString(actionSetActual.get(0)).equals("[0, 2]"));
+    assertTrue(Arrays.toString(actionSetActual.get(1)).equals("[0, 3]"));
+    assertTrue(Arrays.toString(actionSetActual.get(2)).equals("[0, 4]"));
+    assertTrue(Arrays.toString(actionSetActual.get(3)).equals("[1, 1]"));
+    assertTrue(Arrays.toString(actionSetActual.get(4)).equals("[1, 2]"));
+  }
+
+
+  /**
    * Test getRandomMove().
    */
   @Test
@@ -41,7 +76,7 @@ public class MinimaxAITest {
 
     int[] lastMove = new int[] {2, 3};
     board.addMove(lastMove, Game.X);
-    List<int[]> actionSet = board.getActionSet(lastMove,2);
+    List<int[]> actionSet = ai.getActionSet(board, lastMove,2);
 
     for (int i = 0; i < 100; i++) {
       assertTrue(actionSet.contains(ai.getRandomMove(actionSet)));
@@ -82,7 +117,4 @@ public class MinimaxAITest {
     assertEquals(ai.calculateUtility(list3, false), 1, delta);
   }
 
-  @Test
-  public void testCalculateUtilityOfBoardState() {
-  }
 }
