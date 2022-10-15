@@ -24,27 +24,35 @@ In the image above, win condition for player X is met.
 
 
 
-Main classes:
-* Game: implement the game play for Caro.
-* GameBoard: represent the game board (inluding moves made) and have methods to extract certain information from current board state.
-* Player: represent a player in the game.
-* SearchRange: when attempting to confirm if the win condition is met after a certain move was made, it is useful to only consider spaces that are (WIN_CONDITION - 1) spaces away from the last move to make the process more efficient. SearchRange is a struct (represented as a class) that stores this range. 
+**3. Project Structure:**
+* Game: implement the game play for Caro, including setting up players and gameboard, as well as simulating game play between players, checking for win condition, and terminating the game. 
+* Player: represent a player in the game, stores a char that represents the player on board. 
+* board package:
+  * GameBoard: represent the game board as a 2D matrix of characters (representing moves made on board) and have methods to extract certain information from current board state, such as checking for consecutive streaks. 
+  * BoardSubset: since the board can be of any size (ranging from 5 to 99, inclusive), it is computationally expensive to perform certain operations, such as checking board for streaks, on the entirety of game board. In addition, since most Caro game usually focus on the center of the board, the corners and borders are mostly empty cells. Therefore, the BoardSubset class can be used to store the coordinates for a subset of the board, defined by the top and bottow row indexes, as well as the left-most and right-most column indexes. It also contains method to calculate the indexes that represent a board subset, given a center point and a radius. 
+* streak package:
+  ** Streak: streak is defined as consecutive moves from the same player on game board. A streak of 5 (winning condition for Caro) is 5-in-a-row moves from a player. A streak is blocked on one side if it cannot be expand by playing a move of the same character on that side (either blocked by an opponent's move or by the bound of the game board). The Streak class stores count of unblocked and blocked-on-one-side streaks of a certain length. It does not store count of streaks that are blocked on both sides, since that streak cannot be expanded and is therefore useless in terms of gameplay. 
+  ** StreakList: is an array of Streak objects of different streak length, ranging from 2 to WIN_CONDITION, inclusive. The StreakList is compiled by checking the entire board for streaks from a player, and storing any valid streaks of length 2 and above. A StreakList object is then used to calculate the utility score of the board state for that player. 
+* AI package: 
+  ** minimaxAI: an AI for caro which makes decision based on depth-limited minimax algorithm. A minimax algorithm is an adversial search commonly used to make decisions in a 2-player game. 
+  I learned to implement this algorithm within a Tic-Tac-Toe game during CSCI E-80, and decided to expand upon it by applying to Caro. For Caro, it is significantly more challenging to implement this algoritm. This is because it is extremely computationally expensive to apply the algorithm until the game is terminated by a winning move, since 5-in-a-row is needed instead of 3-in-a-row (in Tic Tac Toe), and the board size is much larger (usually 15-by-15 instead of 3-by-3 in Tic Tac Toe). Therefore, in this project, I implement a depth-limited minimax function that terminates and calculate a utility score after a certain depth is reached. 
+  The utility scoring/estimating function is more complex and utilizes heuristic/knowledge of the game (from my personal experience playing it) to minimize depth needed to make a quality decision. Utility scores range from 1 (AI player is winning) to -1 (opponent player is winning). A StreakList is compiled from a board state find the number of streaks of different sizes. The scoring function then takes this StreakList object and calculate a score. Since the objective is to make 5-in-a-row, it is favorable to make streaks as long as possible, so streaks with longer length are scored higher than shorter lengths. Since an unblocked streak offers more potential for expanding, unblocked streak are scored higher than blocked ones with the same length. In addition, 
 
 Unit tests for GameBoard class are included in this project. 
 
 
-**3. How to use this project:**
+**4. How to use this project:**
 
 Run ./test/GameTest.java to start the game. The command line will prompt users for the row and column of moves to be made, and then print out current board state. The command prompt will continue asking for moves until the entire board is filled or a player reaches win condition. 
 
 **4. Current limitations**
 
 * Game board size cannot be larger than 99 by 99. 
-* Players need to input in the cooridnate of moves to make, which can be a hassle.
+* Players need to input in the coordinate of moves to make, which can be a hassle and mistake-prone. A GUI will help make the game more playable by human player. 
 
 
 **5. Future ideas:**
 
 * Create an AI to play the game using mini-max algorithms or reinforcement learning.
 * Implement game variant in which a 5-in-a-row which is blocked on both side does not win the game.
-* Implement a GUI for the game so players can click on positions on game board instead of having to input move's coordinates from command line.  
+* Implement a GUI for the game so players can click on positions on game board to make a move instead of having to input move's coordinates from command line.  
