@@ -93,6 +93,11 @@ There are 2 players, represented in this project as Player X and player O. Playe
 
 Run ./test/GameTest.java to start the game. The command line will prompt users for the row and column of moves to be made, and then print out current board state. The command prompt will continue asking for moves until the entire board is filled or a player reaches win condition. 
 
+Demo:
+
+https://user-images.githubusercontent.com/87917284/198199327-1d3f9d22-934b-4f2a-aeb6-2743fb166db8.mp4
+
+
 **5. Current limitations**
 
 * Game board size cannot be larger than 99 by 99. 
