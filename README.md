@@ -96,7 +96,7 @@ Run ./test/GameTest.java to start the game. The command line will prompt users f
 Demo:
 
 https://user-images.githubusercontent.com/87917284/198199327-1d3f9d22-934b-4f2a-aeb6-2743fb166db8.mp4
-
+In this video, I am player O, and the AI is player X (starting player). The AI won.
 
 **5. Current limitations**
 
