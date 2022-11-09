@@ -109,3 +109,4 @@ In this video, I am player O, and the AI is player X (starting player). The AI w
 
 * Implement game variant in which a 5-in-a-row which is blocked on both side does not win the game.
 * Implement a GUI for the game so players can click on positions on game board to make a move instead of having to input move's coordinates from command line.  
+* Deploy this project on the web using Spring Boot so people can easily play the game against minimax AI. 
